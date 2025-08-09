@@ -1,0 +1,8 @@
+# Project exclude paths
+/jdocuments-doc-compiler-client/target/
+/jdocuments-server/target/
+/jdocuments-commons/target/
+/jdocuments-wasm-client/target/
+/jdocuments-commons/.mvn/
+JDocuments.iml
+.idea
