@@ -1,3 +1,54 @@
-export component CloudDocumentCompiler {
+import { LineEdit } from "std-widgets.slint";
 
+export component CloudDocumentCompilerEntry {
+    in property <string> entry_name;
+
+    HorizontalLayout {
+        Text {
+            text: entry_name;
+        }
+        LineEdit {
+            placeholder-text: "...";
+        }
+    }
+}
+
+export component CloudDocumentCompiler inherits Window {
+    out property <string> m_title;
+    out property <string> m_author;
+    out property <[string]> m_origin;
+    out property <[string]> m_links;
+    out property <[string]> m_tags;
+
+    callback submit();
+
+    VerticalLayout {
+        CloudDocumentCompilerEntry {
+            entry_name: "Document title";
+        }
+        CloudDocumentCompilerEntry {
+            entry_name: "Document author";
+        }
+        CloudDocumentCompilerEntry {
+            entry_name: "Document origin location";
+        }
+        CloudDocumentCompilerEntry {
+            entry_name: "Document origin date";
+        }
+
+        CloudDocumentCompilerEntry {
+            entry_name: "Document Link [0]";
+        }
+        for item[i] in m_links: CloudDocumentCompilerEntry {
+            entry_name: "Document Link [" + i + "]";
+        }
+
+        CloudDocumentCompilerEntry {
+            entry_name: "Document Tag [0]";
+        }
+        for item[i] in m_tags: CloudDocumentCompilerEntry {
+            entry_name: "Document Tag [" + i + "]";
+        }
+
+    }
 }
