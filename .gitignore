@@ -1,8 +1,11 @@
 # Project exclude paths
 /jdocuments-doc-compiler-client/target/
+/jdocuments-doc-compiler-client/Cargo.lock
 /jdocuments-server/target/
+/jdocuments-server/.mvn/
 /jdocuments-commons/target/
 /jdocuments-wasm-client/target/
-/jdocuments-commons/.mvn/
+/jdocuments-wasm-client/Cargo.lock
+/jdocuments-commons/Cargo.lock
 JDocuments.iml
 .idea
