@@ -9,6 +9,6 @@ fn main() {
         .with_ansi(true)
         .with_thread_names(true)
         .init();
-    SubmitterStorage::default();
+    let _storage = SubmitterStorage::default();
     ui::setup().unwrap().run().unwrap()
 }
