@@ -8,3 +8,6 @@ tracing = { version = "0.1.41" }
 tracing-subscriber = { version = "0.3.19" }
 slint = { version = "1.12.1" }
 jdocuments-commons = { path = "../jdocuments-commons" }
+
+[build-dependencies]
+slint-build = { version = "1.12.1" }

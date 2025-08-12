@@ -1,54 +1,152 @@
-import { LineEdit } from "std-widgets.slint";
+import { LineEdit, Button, DatePickerPopup, ListView, VerticalBox, HorizontalBox } from "std-widgets.slint";
 
-export component CloudDocumentCompilerEntry {
-    in property <string> entry_name;
+export component DocumentCompilerEntryUI {
+    in property <string> name;
+    out property <[string]> values;
+    @children
+}
 
+export component DocumentCompilerTextEntryUI inherits DocumentCompilerEntryUI {
     HorizontalLayout {
+        alignment: LayoutAlignment.start;
         Text {
-            text: entry_name;
+            width: parent.width / 2;
+            vertical-alignment: TextVerticalAlignment.center;
+            text: root.name;
         }
         LineEdit {
+            width: root.width / 2;
+            horizontal-alignment: TextHorizontalAlignment.center;
             placeholder-text: "...";
         }
     }
 }
 
-export component CloudDocumentCompiler inherits Window {
-    out property <string> m_title;
-    out property <string> m_author;
-    out property <[string]> m_origin;
-    out property <[string]> m_links;
-    out property <[string]> m_tags;
+export component DocumentCompilerDateEntryUI inherits DocumentCompilerEntryUI {
+    property <string> date_value;
+
+    date-picker:= DatePickerPopup {
+        x: (root.width - self.width) / 2;
+        y: (root.height - self.height) / 2;
+        close-policy: PopupClosePolicy.close-on-click-outside;
+
+        accepted(date) => {
+            date_value = date.day + "." + date.month + "." + date.year;
+            date-picker.close();
+        }
+        canceled => {
+            date-picker.close();
+        }
+    }
+    HorizontalLayout {
+        Text {
+            text: root.name;
+        }
+        Button {
+            width: root.width / 2;
+            colorize-icon: true;
+            icon: @image-url("date_icon.png");
+            clicked => {
+                date-picker.show();
+            }
+        }
+    }
+}
+
+export component DocumentCompilerListTextEntryUI inherits DocumentCompilerEntryUI {
+    in-out property <[string]> list_values;
+
+    callback accept_edit(string);
+    HorizontalLayout {
+        Text {
+            vertical-alignment: TextVerticalAlignment.top;
+            text: root.name;
+        }
+        VerticalBox {
+            /* default line edit frame */
+            HorizontalLayout {
+                spacing: 50px;
+                default_line:= LineEdit {
+                    horizontal-alignment: TextHorizontalAlignment.center;
+                    placeholder-text: "...";
+                    accepted(text) => {
+                        accept_edit(text);
+                    }
+                }
+                Button {
+                    text: "+";
+                    clicked => {
+                        accept_edit(default_line.text);
+                    }
+                }
+            }
+
+            ListView {
+                for item[i] in list_values: HorizontalLayout {
+                    spacing: 50px;
+                    iter_line:= LineEdit {
+                        horizontal-alignment: TextHorizontalAlignment.center;
+                        placeholder-text: "...";
+                        accepted(text) => {
+                            accept_edit(text);
+                        }
+                    }
+                    Button {
+                        text: "+";
+                        clicked => {
+                            accept_edit(iter_line.text);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+export component DocumentCompilerInputDocUI {
+    VerticalLayout {
+        width: 1024px / 2;
+        height: 512px / 1.5;
+        spacing: 15px;
+        alignment: LayoutAlignment.space-around;
+        title:= DocumentCompilerTextEntryUI {
+            name: "Document title:";
+        }
+        author:= DocumentCompilerTextEntryUI {
+            name: "Document author:";
+        }
+        origin_location:= DocumentCompilerTextEntryUI {
+            name: "Document origin location:";
+        }
+        origin_date:= DocumentCompilerDateEntryUI {
+            name: "Document origin date:";
+        }
+        links:= DocumentCompilerListTextEntryUI {
+            name: "Document links:";
+        }
+        tags:= DocumentCompilerListTextEntryUI {
+            name: "Document tags:";
+        }
+    }
+}
+
+export component DocumentCompilerUI inherits Window {
+    out property <color> bachround-color: #222223;
+    out property <color> main-color: #ff5c39;
+    out property <color> second-color: #888b8d;
+    title: "DocumentCompiler";
+
+    width: 1024px;
+    height: 512px;
+    icon: @image-url("icon.png");
+    background: bachround-color;
+    default-font-family: "Cascadia Code";
+    default-font-size: 13px;
+
+    input_component:= DocumentCompilerInputDocUI {
+        visible: true;
+        width: 600px;
+    }
 
     callback submit();
-
-    VerticalLayout {
-        CloudDocumentCompilerEntry {
-            entry_name: "Document title";
-        }
-        CloudDocumentCompilerEntry {
-            entry_name: "Document author";
-        }
-        CloudDocumentCompilerEntry {
-            entry_name: "Document origin location";
-        }
-        CloudDocumentCompilerEntry {
-            entry_name: "Document origin date";
-        }
-
-        CloudDocumentCompilerEntry {
-            entry_name: "Document Link [0]";
-        }
-        for item[i] in m_links: CloudDocumentCompilerEntry {
-            entry_name: "Document Link [" + i + "]";
-        }
-
-        CloudDocumentCompilerEntry {
-            entry_name: "Document Tag [0]";
-        }
-        for item[i] in m_tags: CloudDocumentCompilerEntry {
-            entry_name: "Document Tag [" + i + "]";
-        }
-
-    }
 }
