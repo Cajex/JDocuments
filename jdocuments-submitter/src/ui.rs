@@ -1,4 +1,4 @@
-use slint::{include_modules, PlatformError};
+use slint::{PlatformError, include_modules};
 
 include_modules!();
 

@@ -1,5 +1,5 @@
-use slint::ComponentHandle;
 use crate::storage::SubmitterStorage;
+use slint::ComponentHandle;
 
 mod storage;
 mod ui;

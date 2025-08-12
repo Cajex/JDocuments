@@ -23,15 +23,15 @@ impl Default for SubmitterStorage {
     fn default() -> Self {
         if cfg!(target_os = "windows") {
             if let Ok(profile) = env::var("USERPROFILE") {
-                let documents = PathBuf::from(profile).join("Documents").join("jDocuments");
-                Self::from(documents.to_str().unwrap())
+                let documents = PathBuf::from(format!(r"{}/Documents/jDocuments", profile.replace(r"\", "/")));
+                Self::from(documents.as_os_str().to_str().unwrap())
             } else {
                 Self::from("jDocuments")
             }
         } else if cfg!(target_family = "unix") {
             if let Ok(home) = env::var("HOME") {
-                let documents = PathBuf::from(home).join("Documents").join("jDocuments");
-                Self::from(documents.to_str().unwrap())
+                let documents = PathBuf::from(format!(r"{}/Documents/jDocuments", home.replace(r"\", "/")));
+                Self::from(documents.to_str().unwrap().replace(r"\", "/"))
             } else {
                 Self::from("jDocuments")
             }
@@ -118,6 +118,7 @@ impl SubmitterStorage {
     }
 
     pub fn exists(path: &Path) -> (bool, SubmitterStoragePaths) {
+        info!("checking root path: {:?}.", path);
         if path.exists() {
             if path.is_dir() {
                 let paths = Self::storages(path);
@@ -126,14 +127,17 @@ impl SubmitterStorage {
                 } else {
                     OpenOptions::new()
                         .create_new(true)
+                        .write(true)
                         .open(paths.0.as_path())
                         .unwrap();
                     OpenOptions::new()
                         .create_new(true)
+                        .write(true)
                         .open(paths.1.as_path())
                         .unwrap();
                     OpenOptions::new()
                         .create_new(true)
+                        .write(true)
                         .open(paths.2.as_path())
                         .unwrap();
                 }
@@ -142,15 +146,32 @@ impl SubmitterStorage {
             }
         } else {
             fs::create_dir_all(path).unwrap();
+            let result = (false, Self::storages(path));
+            OpenOptions::new()
+                .create_new(true)
+                .write(true)
+                .open(result.1.0.as_path())
+                .unwrap();
+            OpenOptions::new()
+                .create_new(true)
+                .write(true)
+                .open(result.1.1.as_path())
+                .unwrap();
+            OpenOptions::new()
+                .create_new(true)
+                .write(true)
+                .open(result.1.2.as_path())
+                .unwrap();
+            return result;
         }
         (false, Self::storages(path))
     }
 
     pub fn storages(path: &Path) -> SubmitterStoragePaths {
         (
-            PathBuf::from(format!("{}/documents.json", path.to_str().unwrap())),
-            PathBuf::from(format!("{}/links.json", path.to_str().unwrap())),
-            PathBuf::from(format!("{}/tags.json", path.to_str().unwrap())),
+            PathBuf::from(format!(r"{}/documents.json", path.to_str().unwrap())),
+            PathBuf::from(format!(r"{}/links.json", path.to_str().unwrap())),
+            PathBuf::from(format!(r"{}/tags.json", path.to_str().unwrap())),
         )
     }
 
