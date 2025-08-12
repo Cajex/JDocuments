@@ -1,6 +1,6 @@
 # Project exclude paths
-/jdocuments-doc-compiler-client/target/
-/jdocuments-doc-compiler-client/Cargo.lock
+/jdocuments-submitter/target/
+/jdocuments-submitter/Cargo.lock
 /jdocuments-server/target/
 /jdocuments-server/.mvn/
 /jdocuments-commons/target/
