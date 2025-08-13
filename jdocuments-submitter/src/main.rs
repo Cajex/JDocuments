@@ -9,7 +9,7 @@ mod ui;
 #[command()]
 pub struct SubmitterArguments {
     #[arg(value_enum, short_alias = 'm')]
-    mode: SubmitterMode,
+    mode: Option<SubmitterMode>,
 }
 
 #[derive(Debug, Clone, ValueEnum)]
@@ -26,10 +26,15 @@ fn main() {
         .with_thread_names(true)
         .init();
     let _storage = SubmitterStorage::default();
-    match arguments.mode {
-        SubmitterMode::GraphicInterface => {
-            ui::setup().unwrap().run().unwrap()
+    if let Some(mode) = arguments.mode {
+        match mode {
+            SubmitterMode::GraphicInterface => {
+                ui::setup().unwrap().run().unwrap()
+            }
+            SubmitterMode::Scanner => {
+                panic!("currently not implemented!")
+            }
         }
-        SubmitterMode::Scanner => {}
     }
+
 }

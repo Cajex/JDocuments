@@ -1,3 +1,4 @@
+import { Button } from "std-widgets.slint";
 export component SubmitterWindow inherits Window {
     width: 1024px;
     height: 512px;
@@ -141,13 +142,64 @@ export component SubmitterWindow inherits Window {
                             width: 150px;
                         }
                         Rectangle {
+                            window_popup:= PopupWindow {
+                                close-policy: PopupClosePolicy.close-on-click-outside;
+                                Rectangle {
+                                    y: parent.y + 80px;
+                                    background: root.background;
+                                    width: 300px;
+                                    height:  100px;
+                                    border-width: 1px;
+                                    border-color: root.second_color;
+                                    border-radius: 6px;
+                                    VerticalLayout {
+                                        alignment: LayoutAlignment.center;
+                                        height: parent.height;
+                                        HorizontalLayout {
+                                            width: parent.width;
+                                            alignment: LayoutAlignment.center;
+                                            spacing: 20px;
+                                            Text {
+                                                vertical-alignment: TextVerticalAlignment.center;
+                                                color: root.second_color;
+                                                text: "Datum";
+                                                font-family: primary_font;
+                                                font-size: 14px;
+                                                width: 50px;
+                                            }
+                                            Rectangle {
+                                                border-color: root.second_color;
+                                                border-width: 1px;
+                                                width: 120px;
+                                                height: 28px;
+                                                border-radius: 6px;
+                                                TextInput {
+                                                    horizontal-alignment: TextHorizontalAlignment.center;
+                                                    vertical-alignment: TextVerticalAlignment.center;
+                                                    color: root.second_color;
+                                                    width: parent.width - 7px;
+                                                    height: parent.height;
+                                                    selection-background-color: root.selection_background_color;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                             border-color: root.second_color;
                             border-width: 1px;
                             width: 150px;
                             height: 28px;
                             border-radius: 6px;
                             Image {
-                                source: @image-url("")
+                                source: @image-url("resources/clock.png");
+                                width: 15px;
+                                height: 15px;
+                            }
+                            TouchArea {
+                                clicked => {
+                                    window_popup.show();
+                                }
                             }
                         }
                     }
