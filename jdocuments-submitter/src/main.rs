@@ -3,7 +3,7 @@ use crate::storage::SubmitterStorage;
 use slint::ComponentHandle;
 
 mod storage;
-mod ui;
+mod manual;
 
 #[derive(Parser, Debug)]
 #[command()]
@@ -14,8 +14,8 @@ pub struct SubmitterArguments {
 
 #[derive(Debug, Clone, ValueEnum)]
 pub enum SubmitterMode {
-    GraphicInterface,
-    Scanner,
+    Manual,
+    Capture,
 }
 
 fn main() {
@@ -28,10 +28,10 @@ fn main() {
     let _storage = SubmitterStorage::default();
     if let Some(mode) = arguments.mode {
         match mode {
-            SubmitterMode::GraphicInterface => {
-                ui::setup().unwrap().run().unwrap()
+            SubmitterMode::Manual => {
+                manual::setup().unwrap().run().unwrap()
             }
-            SubmitterMode::Scanner => {
+            SubmitterMode::Capture => {
                 panic!("currently not implemented!")
             }
         }
