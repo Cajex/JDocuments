@@ -1,4 +1,178 @@
 export component SubmitterWindow inherits Window {
     width: 1024px;
     height: 512px;
+    title: "Submitter";
+    background: #242423;
+    icon: @image-url("resources/icon.png");
+    out property <color> second_color: #ccc5b9;
+    out property <color> selection_background_color: #6c757d;
+    out property <string> primary_font: "Cascadia Code";
+    VerticalLayout {
+        width: root.width;
+        height: root.height;
+        alignment: LayoutAlignment.center;
+        HorizontalLayout {
+            alignment: LayoutAlignment.center;
+            spacing: 30px;
+
+            HorizontalLayout {
+                height: 400px;
+                spacing: 30px;
+                HorizontalLayout {
+                    Text {
+                        font-family: primary_font;
+                        font-size: 15px;
+                        font-weight: 600;
+                        height: 25px;
+                        vertical-alignment: TextVerticalAlignment.center;
+                        color: root.second_color;
+                        text: "General";
+                    }
+                }
+                Rectangle {
+                    background: root.second_color;
+                    width: 1px;
+                    Rectangle {
+                        y: parent.y;
+                        background: root.background;
+                        border-radius: 30px;
+                        border-color: root.second_color;
+                        border-width: 1px;
+                        width: 25px;
+                        height: 25px;
+                    }
+                }
+            }
+
+            Rectangle {
+                width: (root.width * 0.5);
+                height: 400px;
+                border-color: root.second_color;
+                border-width: 1px;
+                border-radius: 6px;
+                VerticalLayout {
+                    x: 20px;
+                    width: parent.width;
+                    height: parent.height;
+                    alignment: LayoutAlignment.space-around;
+                    HorizontalLayout {
+                        Text {
+                            vertical-alignment: TextVerticalAlignment.center;
+                            color: root.second_color;
+                            text: "Document Title";
+                            font-family: primary_font;
+                            font-size: 14px;
+                            width: 150px;
+                        }
+                        Rectangle {
+                            border-color: root.second_color;
+                            border-width: 1px;
+                            width: 300px;
+                            height: 28px;
+                            border-radius: 6px;
+                            TextInput {
+                                horizontal-alignment: TextHorizontalAlignment.center;
+                                vertical-alignment: TextVerticalAlignment.center;
+                                color: root.second_color;
+                                width: parent.width - 40px;
+                                height: parent.height;
+                                selection-background-color: root.selection_background_color;
+                            }
+                        }
+
+                    }
+                    HorizontalLayout {
+                        Text {
+                            vertical-alignment: TextVerticalAlignment.center;
+                            color: root.second_color;
+                            text: "Author Title";
+                            font-family: primary_font;
+                            font-size: 14px;
+                            width: 150px;
+                        }
+                        Rectangle {
+                            border-color: root.second_color;
+                            border-width: 1px;
+                            width: 300px;
+                            height: 28px;
+                            border-radius: 6px;
+                            TextInput {
+                                horizontal-alignment: TextHorizontalAlignment.center;
+                                vertical-alignment: TextVerticalAlignment.center;
+                                color: root.second_color;
+                                width: parent.width - 40px;
+                                height: parent.height;
+                                selection-background-color: root.selection_background_color;
+                            }
+                        }
+                    }
+                    HorizontalLayout {
+                        Text {
+                            vertical-alignment: TextVerticalAlignment.center;
+                            color: root.second_color;
+                            text: "Origin location";
+                            font-family: primary_font;
+                            font-size: 14px;
+                            width: 150px;
+                        }
+                        Rectangle {
+                            border-color: root.second_color;
+                            border-width: 1px;
+                            width: 300px;
+                            height: 28px;
+                            border-radius: 6px;
+                            TextInput {
+                                horizontal-alignment: TextHorizontalAlignment.center;
+                                vertical-alignment: TextVerticalAlignment.center;
+                                color: root.second_color;
+                                width: parent.width - 40px;
+                                height: parent.height;
+                                selection-background-color: root.selection_background_color;
+                            }
+                        }
+                    }
+                    HorizontalLayout {
+                        Text {
+                            vertical-alignment: TextVerticalAlignment.center;
+                            color: root.second_color;
+                            text: "Origin Date";
+                            font-family: primary_font;
+                            font-size: 14px;
+                            width: 150px;
+                        }
+                        Rectangle {
+                            border-color: root.second_color;
+                            border-width: 1px;
+                            width: 150px;
+                            height: 28px;
+                            border-radius: 6px;
+                            Image {
+                                source: @image-url("")
+                            }
+                        }
+                    }
+                    HorizontalLayout {
+                        Text {
+                            vertical-alignment: TextVerticalAlignment.center;
+                            color: root.second_color;
+                            text: "Document Links";
+                            font-family: primary_font;
+                            font-size: 14px;
+                            width: 150px;
+                        }
+                    }
+                    HorizontalLayout {
+                        Text {
+                            vertical-alignment: TextVerticalAlignment.center;
+                            color: root.second_color;
+                            text: "Document Tags";
+                            font-family: primary_font;
+                            font-size: 14px;
+                            width: 150px;
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
