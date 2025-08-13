@@ -9,6 +9,7 @@ jdocuments-commons = { path = "../jdocuments-commons" }
 serde = { version = "1.0.219" }
 tracing = { version = "0.1.41" }
 tracing-subscriber = { version = "0.3.19" }
+clap = { version = "4.5.45", features = ["derive"] }
 
 [build-dependencies]
 slint-build = { version = "1.12.1" }
