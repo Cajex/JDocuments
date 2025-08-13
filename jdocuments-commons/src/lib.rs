@@ -68,7 +68,7 @@ pub trait CloudObject {
         Self: Sized,
         Self: Deserialize<'a>,
     {
-        serde_json::from_slice(str.as_bytes()).unwrap()
+        serde_json::from_str(str).unwrap()
     }
 }
 
