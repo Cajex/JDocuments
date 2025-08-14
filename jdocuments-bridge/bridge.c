@@ -1,25 +1,25 @@
 #include "include/bridge.h"
 
-int bridge_select_next(BridgeHandle*) {
+int bridge_select_next(BridgeRawHandle*) {
     return 0;
 }
 
-BridgeHandle bridge_open(const char *manufacturer, const char *family, const char *product) {
+BridgeRawHandle bridge_open(const char *manufacturer, const char *family, const char *product) {
     return NULL;
 }
 
-size_t bridge_open_handles(BridgeHandle*handles) {
+unsigned char bridge_collect(BridgeRawHandle*handles) {
     return 0;
 }
 
-BridgeHandle bridge_look_for(const char *product) {
+BridgeRawHandle bridge_look_for(const char *product) {
     return NULL;
 }
 
-BridgeDriverInvortmation bridge_get_invortmation(BridgeHandle) {
-    return (BridgeDriverInvortmation){};
+BridgeHandle bridge_get_invortmation(BridgeRawHandle) {
+    return (BridgeHandle){};
 }
 
-int bridge_close(BridgeHandle) {
+unsigned char bridge_close(BridgeRawHandle) {
     return 0;
 }

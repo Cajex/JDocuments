@@ -23,14 +23,18 @@ impl Default for SubmitterStorage {
     fn default() -> Self {
         if cfg!(target_os = "windows") {
             if let Ok(profile) = env::var("USERPROFILE") {
-                let documents = PathBuf::from(format!(r"{}/Documents/jDocuments", profile.replace(r"\", "/")));
+                let documents = PathBuf::from(format!(
+                    r"{}/Documents/jDocuments",
+                    profile.replace(r"\", "/")
+                ));
                 Self::from(documents.as_os_str().to_str().unwrap())
             } else {
                 Self::from("jDocuments")
             }
         } else if cfg!(target_family = "unix") {
             if let Ok(home) = env::var("HOME") {
-                let documents = PathBuf::from(format!(r"{}/Documents/jDocuments", home.replace(r"\", "/")));
+                let documents =
+                    PathBuf::from(format!(r"{}/Documents/jDocuments", home.replace(r"\", "/")));
                 Self::from(documents.to_str().unwrap().replace(r"\", "/"))
             } else {
                 Self::from("jDocuments")
@@ -197,7 +201,13 @@ impl SubmitterStorage {
         let writer_thread = thread::spawn(move || -> io::Result<()> {
             let mut opened = OpenOptions::new().write(true).open(storages.0)?;
             for chunk in io_channel.1 {
-                opened.write_all(&chunk.iter().cloned().filter(|&b| b != 0).collect::<Vec<u8>>())?;
+                opened.write_all(
+                    &chunk
+                        .iter()
+                        .cloned()
+                        .filter(|&b| b != 0)
+                        .collect::<Vec<u8>>(),
+                )?;
             }
             Ok(())
         });

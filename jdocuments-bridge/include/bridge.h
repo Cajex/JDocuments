@@ -14,19 +14,19 @@
 #endif
 #include "twain.h"
 
-BRIDGE_PUBLIC typedef void* BridgeHandle;
+BRIDGE_PUBLIC typedef void* BridgeRawHandle;
 
 BRIDGE_PUBLIC typedef struct {
+  BridgeRawHandle handle;
+} BridgeHandle;
 
-} BridgeDriverInvortmation;
-
-extern "C" {
 /**
  * queries the next device.
  * @return Callback result whether a driver was found for the device.
  */
-int bridge_select_next(BridgeHandle*);
+int bridge_select_next(BridgeRawHandle*);
 
+extern "C" {
 /**
  * opens the interface between device broker and application.
  * @param manufacturer of application
@@ -34,31 +34,31 @@ int bridge_select_next(BridgeHandle*);
  * @param product name of application
  * @return handle of the broker.
  */
-BRIDGE_PUBLIC BridgeHandle bridge_open(const char* manufacturer, const char* family, const char* product);
+BRIDGE_PUBLIC BridgeRawHandle bridge_open(const char* manufacturer, const char* family, const char* product);
 
 /**
  * queries all available handles.
  * @param handles array pointer to queried handle.
  * @return count of available handles.
  */
-BRIDGE_PUBLIC size_t bridge_open_handles(BridgeHandle* handles);
+BRIDGE_PUBLIC unsigned char bridge_collect(BridgeRawHandle* handles);
 
 /**
  * queries devices for their name.
  * @param product device name
  * @return queried handle
  */
-BRIDGE_PUBLIC BridgeHandle bridge_look_for(const char* product);
+BRIDGE_PUBLIC BridgeRawHandle bridge_look_for(const char* product);
 
 /**
  *
  * @return provided information of a handle.
  */
-BRIDGE_PUBLIC BridgeDriverInvortmation bridge_get_invortmation(BridgeHandle);
+BRIDGE_PUBLIC BridgeHandle bridge_get_invortmation(BridgeRawHandle);
 
 /**
  * closes the interface between device broker and application.
  * @return Callback result whether the broker query was successful.
  */
-BRIDGE_PUBLIC int bridge_close(BridgeHandle);
+BRIDGE_PUBLIC unsigned char bridge_close(BridgeRawHandle);
 }

@@ -1,9 +1,10 @@
-use clap::{Parser, ValueEnum};
 use crate::storage::SubmitterStorage;
+use clap::{Parser, ValueEnum};
 use slint::ComponentHandle;
 
-mod storage;
+mod bridge;
 mod manual;
+mod storage;
 
 #[derive(Parser, Debug)]
 #[command()]
@@ -28,13 +29,10 @@ fn main() {
     let _storage = SubmitterStorage::default();
     if let Some(mode) = arguments.mode {
         match mode {
-            SubmitterMode::Manual => {
-                manual::setup().unwrap().run().unwrap()
-            }
+            SubmitterMode::Manual => manual::setup().unwrap().run().unwrap(),
             SubmitterMode::Capture => {
                 panic!("currently not implemented!")
             }
         }
     }
-
 }
