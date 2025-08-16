@@ -1,67 +1,126 @@
+use std::ffi::CString;
+
+pub type BridgeInterfaceHandle<'a> = BridgeHandle<'a>;
+
+#[derive(Clone)]
+pub struct BridgeHandle<'a>(&'a BridgeRawHandle);
+
 pub type BridgeRawHandle = *mut std::ffi::c_void;
 
-#[repr(C)]
-pub struct BridgeHandle {
-    raw: BridgeRawHandle,
-}
+impl<'a> BridgeHandle<'a> {
+    pub fn raw(&self) -> &'a BridgeRawHandle {
+        self.0
+    }
 
-pub struct BridgeInterface {
-    broker_handle: BridgeRawHandle,
-    handles: Vec<BridgeHandle>,
-}
-
-impl BridgeHandle {
-    pub fn raw(&self) -> BridgeRawHandle {
-        self.raw
+    pub fn dummy() -> *mut std::ffi::c_double {
+        0 as *mut std::ffi::c_double
     }
 }
 
-impl BridgeInterface {
-    //noinspection RsCStringPointer
-    pub fn new(manufacturer: String, family: String, product: String) -> Self {
+impl From<BridgeRawHandle> for BridgeHandle<'_> {
+    fn from(value: BridgeRawHandle) -> Self {
         unsafe {
-            let interface = Self {
-                broker_handle: bridge_open(
-                    std::ffi::CString::new(manufacturer).unwrap().as_ptr(),
-                    std::ffi::CString::new(family).unwrap().as_ptr(),
-                    std::ffi::CString::new(product).unwrap().as_ptr(),
-                ),
-                handles: vec![],
-            };
-            interface
-        }
-    }
-
-    pub fn open(&mut self) {
-        unsafe {
-            let ptr: BridgeRawHandle = std::ptr::null_mut();
-            let n = bridge_collect(ptr);
-            let slice = std::slice::from_raw_parts(ptr, n as usize);
+            let handle: *const BridgeRawHandle = value as *const BridgeRawHandle;
+            Self { 0: &*handle }
         }
     }
 }
 
-impl Drop for BridgeInterface {
+impl Drop for BridgeHandle<'_> {
     fn drop(&mut self) {
         unsafe {
-            bridge_close(self.broker_handle);
+            bridge_drop_handle(*self.raw());
         }
     }
+}
+
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct BridgeInformationRequest {
+    pub id: u32,
+    pub version: BridgeInformationRequestVersion,
+    pub protocol_major: u16,
+    pub protocol_minor: u16,
+    pub supported_groups: u32,
+    pub manufacturer: [u8; 34],
+    pub product_family: [u8; 34],
+    pub product_name: [u8; 34],
+}
+
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct BridgeInformationRequestVersion {
+    pub major_num: u16,
+    pub minor_num: u16,
+    pub language: u16,
+    pub country: u16,
+    pub info: [u8; 34], // TW_STR32 = 34 chars
 }
 
 #[link(name = "bridge")]
 unsafe extern "C" {
-    pub fn bridge_open(
+    fn bridge_open(
         manufacturer: *const std::ffi::c_char,
         family: *const std::ffi::c_char,
         product: *const std::ffi::c_char,
     ) -> BridgeRawHandle;
 
-    pub fn bridge_collect(handles: BridgeRawHandle) -> std::ffi::c_uchar;
+    fn bridge_slect_next(handle: BridgeRawHandle) -> std::ffi::c_uchar;
 
-    pub fn bridge_look_for(product: *const std::ffi::c_char) -> BridgeRawHandle;
+    fn bridge_look_for(product: *const std::ffi::c_char) -> BridgeRawHandle;
 
-    pub fn bridge_get_information(handle: BridgeRawHandle) -> BridgeHandle;
+    fn bridge_get_information(handle: BridgeRawHandle) -> BridgeInformationRequest;
 
     fn bridge_close(handle: BridgeRawHandle) -> std::ffi::c_uchar;
+
+    fn bridge_drop_handle(handle: BridgeRawHandle);
+}
+
+pub fn open_bridge<'a>(manufacturer: &str, family: &str, product: &str) -> BridgeHandle<'a> {
+    unsafe {
+        let raw = bridge_open(
+            CString::new(manufacturer).unwrap().into_raw(),
+            CString::new(family).unwrap().into_raw(),
+            CString::new(product).unwrap().into_raw(),
+        );
+        BridgeHandle::from(raw)
+    }
+}
+
+pub fn select_next<'a>() -> Option<BridgeHandle<'a>> {
+    unsafe {
+        let ptr = BridgeHandle::dummy();
+        let r = bridge_slect_next(ptr as BridgeRawHandle);
+        if r == 0 {
+            Some(BridgeHandle::from(ptr as BridgeRawHandle))
+        } else {
+            None
+        }
+    }
+}
+
+pub fn collect<'a>() -> Vec<BridgeHandle<'a>> {
+    let mut handles = Vec::new();
+    loop {
+        let next = select_next();
+        match next {
+            None => {
+                break;
+            }
+            Some(handle) => {
+                handles.push(handle);
+            }
+        }
+    }
+    handles
+}
+
+pub fn request_information(handle: BridgeHandle<'_>) -> BridgeInformationRequest {
+    unsafe { bridge_get_information(*handle.raw()) }
+}
+
+pub fn close_bridge(handle: BridgeInterfaceHandle<'_>) {
+    unsafe {
+        bridge_close(*handle.raw());
+    }
 }

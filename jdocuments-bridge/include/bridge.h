@@ -17,16 +17,29 @@
 BRIDGE_PUBLIC typedef void* BridgeRawHandle;
 
 BRIDGE_PUBLIC typedef struct {
-  BridgeRawHandle handle;
-} BridgeHandle;
+  TW_UINT32   id;
+  TW_VERSION  version;
+  TW_UINT16   protocol_maj;
+  TW_UINT16   protocol_min;
+  TW_UINT32   supported_grps;
+  TW_STR32    manufacturer;
+  TW_STR32    product_famiy;
+  TW_STR32    product_name;
+} BridgeInformationRequest;
+
+BRIDGE_PUBLIC typedef struct {
+  TW_UINT16 major_num;
+  TW_UINT16 minor_num;
+  TW_UINT16 language;
+  TW_UINT16 country;
+  TW_STR32 info;
+} BridgeInformationRequestVersion;
 
 /**
- * queries the next device.
- * @return Callback result whether a driver was found for the device.
- */
-int bridge_select_next(BridgeRawHandle*);
-
-extern "C" {
+* queries the next device.
+* @return Callback result whether a driver was found for the device.
+*/
+BRIDGE_PUBLIC unsigned char bridge_select_next(BridgeRawHandle*);
 /**
  * opens the interface between device broker and application.
  * @param manufacturer of application
@@ -35,13 +48,6 @@ extern "C" {
  * @return handle of the broker.
  */
 BRIDGE_PUBLIC BridgeRawHandle bridge_open(const char* manufacturer, const char* family, const char* product);
-
-/**
- * queries all available handles.
- * @param handles array pointer to queried handle.
- * @return count of available handles.
- */
-BRIDGE_PUBLIC unsigned char bridge_collect(BridgeRawHandle* handles);
 
 /**
  * queries devices for their name.
@@ -54,11 +60,10 @@ BRIDGE_PUBLIC BridgeRawHandle bridge_look_for(const char* product);
  *
  * @return provided information of a handle.
  */
-BRIDGE_PUBLIC BridgeHandle bridge_get_invortmation(BridgeRawHandle);
+BRIDGE_PUBLIC BridgeInformationRequest bridge_get_invortmation(BridgeRawHandle);
 
 /**
  * closes the interface between device broker and application.
  * @return Callback result whether the broker query was successful.
  */
 BRIDGE_PUBLIC unsigned char bridge_close(BridgeRawHandle);
-}

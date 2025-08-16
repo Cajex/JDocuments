@@ -4,6 +4,7 @@ use slint::ComponentHandle;
 
 mod bridge;
 mod manual;
+mod scanner;
 mod storage;
 
 #[derive(Parser, Debug)]
