@@ -17,8 +17,9 @@ export component SubmitterWindow inherits Window {
     callback document_links_accepted(string);
     callback document_tags_accepted(string);
 
+    callback submit(); 
     function submit_formular() {
-
+        submit();
     }
 
     VerticalLayout {

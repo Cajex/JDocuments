@@ -5,6 +5,4 @@ pub struct ScannerPool<'a> {
     handles: Vec<BridgeInterfaceHandle<'a>>,
 }
 
-impl<'a> ScannerPool<'a> {
-
-}
+impl<'a> ScannerPool<'a> {}

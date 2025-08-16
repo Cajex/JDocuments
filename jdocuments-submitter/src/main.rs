@@ -1,6 +1,7 @@
 use crate::storage::SubmitterStorage;
 use clap::{Parser, ValueEnum};
 use slint::ComponentHandle;
+use std::sync::{Arc, Mutex};
 
 mod bridge;
 mod manual;
@@ -27,10 +28,13 @@ fn main() {
         .with_ansi(true)
         .with_thread_names(true)
         .init();
-    let _storage = SubmitterStorage::default();
+    let storage = Arc::new(Mutex::new(SubmitterStorage::default()));
     if let Some(mode) = arguments.mode {
         match mode {
-            SubmitterMode::Manual => manual::setup().unwrap().run().unwrap(),
+            SubmitterMode::Manual => manual::setup(storage.clone())
+                .unwrap()
+                .run()
+                .unwrap(),
             SubmitterMode::Capture => {
                 panic!("currently not implemented!")
             }
