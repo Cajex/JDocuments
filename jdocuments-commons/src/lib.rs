@@ -120,6 +120,7 @@ impl CloudDocumentObject {
 
         CloudTagObject::attach_tags(attached_tags, tag_stack, document.id);
         CloudLinkObject::link_document(attached_links, link_stack, document.id);
+        document_stack.push(document);
     }
 
     pub fn insert_form(
@@ -148,6 +149,7 @@ impl CloudDocumentObject {
 
         CloudTagObject::attach_tags(attached_tags, &mut form.tags, document.id);
         CloudLinkObject::link_document(attached_links, &mut form.links, document.id);
+        form.documents.push(document);
     }
 }
 
@@ -201,7 +203,7 @@ impl CloudLinkObject {
             None => {
                 let tag = CloudLinkObject {
                     declaration: p_link,
-                    id,
+                    id: CloudUniqueID::LinkID(link_stack.len() + 1),
                     note: "".to_string(),
                     inner_links: vec![id],
                 };
