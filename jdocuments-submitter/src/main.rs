@@ -31,10 +31,7 @@ fn main() {
     let storage = Arc::new(Mutex::new(SubmitterStorage::default()));
     if let Some(mode) = arguments.mode {
         match mode {
-            SubmitterMode::Manual => manual::setup(storage.clone())
-                .unwrap()
-                .run()
-                .unwrap(),
+            SubmitterMode::Manual => manual::setup(storage.clone()).unwrap().run().unwrap(),
             SubmitterMode::Capture => {
                 panic!("currently not implemented!")
             }

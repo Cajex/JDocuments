@@ -8,7 +8,7 @@ use std::sync::mpsc;
 use std::{env, fs, io, thread};
 use tracing::info;
 
-pub const BYTES_PER_CHUNK: usize = 2048;
+pub const BYTES_PER_CHUNK: usize = 512;
 
 pub struct SubmitterStorage {
     pub form: StorageForm,
@@ -103,16 +103,14 @@ impl SubmitterStorage {
     }
 
     pub fn load_from_root(paths: &SubmitterStoragePaths) -> io::Result<Self> {
-        Ok(
-            Self {
-                path: PathBuf::from(paths.0.parent().expect("unable to locate root path.")),
-                form: StorageForm {
-                    documents: Self::load_from_file(paths.0.as_path())?,
-                    links: Self::load_from_file(paths.1.as_path())?,
-                    tags: Self::load_from_file(paths.2.as_path())?,
-                },
-            }
-        )
+        Ok(Self {
+            path: PathBuf::from(paths.0.parent().expect("unable to locate root path.")),
+            form: StorageForm {
+                documents: Self::load_from_file(paths.0.as_path())?,
+                links: Self::load_from_file(paths.1.as_path())?,
+                tags: Self::load_from_file(paths.2.as_path())?,
+            },
+        })
     }
 
     pub fn load_from_file<O>(path: &Path) -> io::Result<Vec<O>>
@@ -221,8 +219,9 @@ impl SubmitterStorage {
             info!("opened a new chunk with[{}]!", BYTES_PER_CHUNK);
             let writer = io_channel.0.clone();
             thread_handles.push(thread::spawn(move || -> io::Result<()> {
-                let mut buf = [0u8; 2048];
+                let mut buf = [0u8; BYTES_PER_CHUNK];
                 buf[..chunk.len()].copy_from_slice(&chunk);
+                println!("{:?}", buf);
                 writer
                     .send(buf)
                     .expect("unable to write chunk to writer thread!");

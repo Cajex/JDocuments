@@ -9,6 +9,9 @@ export component SubmitterWindow inherits Window {
     out property <color> selection_background_color: #6c757d;
     out property <color> accent_color: #60d394;
     out property <string> primary_font: "Cascadia Code";
+    in-out property <int> documents_inserted_counter;
+    in-out property <int> links_inserted_counter;
+    in-out property <int> tags_inserted_counter;
     
     callback document_title_accepted(string);
     callback document_author_accepted(string);
@@ -16,15 +19,89 @@ export component SubmitterWindow inherits Window {
     callback document_origin_date_accepted(string);
     callback document_links_accepted(string);
     callback document_tags_accepted(string);
-
+    callback request_documents_len() -> int;
+    callback request_links_len() -> int;
+    callback request_tags_len() -> int;
+    callback call_init_info();
     callback submit();
+
     function submit_formular() {
         title_input.text = "";
         author_input.text = "";
         location_input.text = "";
         link_input.text = "";
         tag_input.text = "";
+        documents_inserted_counter = request_documents_len();
+        links_inserted_counter = request_links_len();
+        tags_inserted_counter = request_tags_len();
         submit();
+    }
+    function init_info() {
+        documents_inserted_counter = request_documents_len();
+        links_inserted_counter = request_links_len();
+        tags_inserted_counter = request_tags_len();
+    }
+
+    HorizontalLayout {
+        x: 0;
+        y: 0;
+        padding-top: 10px;
+        padding-left: 10px;
+        alignment: LayoutAlignment.start;
+        HorizontalLayout {
+            Text {
+                font-size: 8px;
+                font-family: root.primary_font;
+                color: root.second_color;
+                text: "Documents inserted: ";
+            }
+            Text {
+                font-size: 8px;
+                font-family: root.primary_font;
+                color: root.accent_color;
+                text: documents_inserted_counter;
+            }
+        }
+        Text {
+            font-size: 8px;
+            font-family: root.primary_font;
+            color: root.second_color;
+            text: " | ";
+        }
+        HorizontalLayout {
+            Text {
+                font-size: 8px;
+                font-family: root.primary_font;
+                color: root.second_color;
+                text: "Links inserted: ";
+            }
+            Text {
+                font-size: 8px;
+                font-family: root.primary_font;
+                color: root.accent_color;
+                text: links_inserted_counter;
+            }
+        }
+        Text {
+            font-size: 8px;
+            font-family: root.primary_font;
+            color: root.second_color;
+            text: " | ";
+        }
+        HorizontalLayout {
+            Text {
+                font-size: 8px;
+                font-family: root.primary_font;
+                color: root.second_color;
+                text: "Tags inserted: ";
+            }
+            Text {
+                font-size: 8px;
+                font-family: root.primary_font;
+                color: root.accent_color;
+                text: tags_inserted_counter;
+            }
+        }
     }
 
     VerticalLayout {

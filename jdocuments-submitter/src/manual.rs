@@ -1,6 +1,6 @@
 use crate::storage::SubmitterStorage;
-use jdocuments_commons::{CloudDocumentObject};
-use slint::{include_modules, PlatformError};
+use jdocuments_commons::CloudDocumentObject;
+use slint::{PlatformError, include_modules};
 use std::sync::{Arc, Mutex};
 
 include_modules!();
@@ -104,6 +104,43 @@ pub fn setup(storage: Arc<Mutex<SubmitterStorage>>) -> Result<SubmitterWindow, P
             } else {
                 formular.lock().as_mut().unwrap().form_tags = None;
             }
+        });
+    }
+
+    {
+        let storage = storage.clone();
+        let storage = storage.lock().unwrap();
+        tracing::info!(
+            "Manual formular setup. Documents: {}, Links: {}, Tags: {}",
+            storage.form.documents.len(),
+            storage.form.links.len(),
+            storage.form.tags.len()
+        );
+        window.invoke_call_init_info();
+    }
+
+
+    {
+        let storage = storage.clone();
+        window.on_request_documents_len(move || {
+            let storage = storage.lock().unwrap();
+            storage.form.documents.len() as i32
+        });
+    }
+
+    {
+        let storage = storage.clone();
+        window.on_request_links_len(move || {
+            let storage = storage.lock().unwrap();
+            storage.form.links.len() as i32
+        });
+    }
+
+    {
+        let storage = storage.clone();
+        window.on_request_tags_len(move || {
+            let storage = storage.lock().unwrap();
+            storage.form.tags.len() as i32
         });
     }
 
