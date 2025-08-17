@@ -17,8 +17,13 @@ export component SubmitterWindow inherits Window {
     callback document_links_accepted(string);
     callback document_tags_accepted(string);
 
-    callback submit(); 
+    callback submit();
     function submit_formular() {
+        title_input.text = "";
+        author_input.text = "";
+        location_input.text = "";
+        links_text.text = "";
+        tag_input.text = "";
         submit();
     }
 
