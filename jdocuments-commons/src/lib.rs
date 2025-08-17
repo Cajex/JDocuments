@@ -44,6 +44,13 @@ pub struct CloudLinkObject {
     inner_links: Vec<CloudUniqueID>,
 }
 
+#[derive(Serialize, Deserialize)]
+pub struct StorageForm {
+    pub documents: Vec<CloudDocumentObject>,
+    pub tags: Vec<CloudTagObject>,
+    pub links: Vec<CloudLinkObject>,
+}
+
 pub trait CloudObject {
     type Type;
 
@@ -113,6 +120,34 @@ impl CloudDocumentObject {
 
         CloudTagObject::attach_tags(attached_tags, tag_stack, document.id);
         CloudLinkObject::link_document(attached_links, link_stack, document.id);
+    }
+
+    pub fn insert_form(
+        title: Option<String>,
+        author: Option<String>,
+        origin_date: Option<String>,
+        origin_location: Option<String>,
+        attached_tags: Vec<String>,
+        attached_links: Vec<String>,
+        form: &mut StorageForm,
+    ) {
+        let document = Self {
+            title,
+            author,
+            vc: VersionControlObject {
+                proceedings: vec![
+                    VersionControlAction::Origin(
+                        origin_date.unwrap_or("Not specified".to_string()),
+                        origin_location.unwrap_or("Not specified".to_string()),
+                    ),
+                    VersionControlAction::Insert(Local::now().format("%d.%m.%Y").to_string()),
+                ],
+            },
+            id: CloudUniqueID::DocumentID(form.documents.len() + 1),
+        };
+
+        CloudTagObject::attach_tags(attached_tags, &mut form.tags, document.id);
+        CloudLinkObject::link_document(attached_links, &mut form.links, document.id);
     }
 }
 

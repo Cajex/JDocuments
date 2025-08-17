@@ -11,9 +11,7 @@ use tracing::info;
 pub const BYTES_PER_CHUNK: usize = 2048;
 
 pub struct SubmitterStorage {
-    pub documents: Vec<CloudDocumentObject>,
-    pub links: Vec<CloudLinkObject>,
-    pub tags: Vec<CloudTagObject>,
+    pub form: StorageForm,
     pub path: PathBuf,
 }
 
@@ -61,9 +59,11 @@ impl SubmitterStorage {
             let cached =
                 Self::write_defaults(&paths).expect("unable to parse default json values.");
             Self {
-                documents: cached.0,
-                links: cached.1,
-                tags: cached.2,
+                form: StorageForm {
+                    documents: cached.0,
+                    links: cached.1,
+                    tags: cached.2,
+                },
                 path: root,
             }
         }
@@ -103,12 +103,16 @@ impl SubmitterStorage {
     }
 
     pub fn load_from_root(paths: &SubmitterStoragePaths) -> io::Result<Self> {
-        Ok(Self {
-            documents: Self::load_from_file(paths.0.as_path())?,
-            links: Self::load_from_file(paths.1.as_path())?,
-            tags: Self::load_from_file(paths.2.as_path())?,
-            path: PathBuf::from(paths.0.parent().expect("unable to locate root path.")),
-        })
+        Ok(
+            Self {
+                path: PathBuf::from(paths.0.parent().expect("unable to locate root path.")),
+                form: StorageForm {
+                    documents: Self::load_from_file(paths.0.as_path())?,
+                    links: Self::load_from_file(paths.1.as_path())?,
+                    tags: Self::load_from_file(paths.2.as_path())?,
+                },
+            }
+        )
     }
 
     pub fn load_from_file<O>(path: &Path) -> io::Result<Vec<O>>
@@ -180,9 +184,9 @@ impl SubmitterStorage {
     }
 
     pub fn update(&self) {
-        let documents_json = CloudDocumentObject::list_to_pretty_json(&self.documents);
-        let links_json = CloudLinkObject::list_to_pretty_json(&self.links);
-        let tags_json = CloudTagObject::list_to_pretty_json(&self.tags);
+        let documents_json = CloudDocumentObject::list_to_pretty_json(&self.form.documents);
+        let links_json = CloudLinkObject::list_to_pretty_json(&self.form.links);
+        let tags_json = CloudTagObject::list_to_pretty_json(&self.form.tags);
         let storages = Self::storages(self.path.as_path());
         let mut thread_handles = vec![];
         thread_handles.push(thread::spawn(move || -> io::Result<()> {

@@ -1,5 +1,5 @@
 use crate::storage::SubmitterStorage;
-use jdocuments_commons::CloudDocumentObject;
+use jdocuments_commons::{CloudDocumentObject};
 use slint::{include_modules, PlatformError};
 use std::sync::{Arc, Mutex};
 
@@ -110,9 +110,6 @@ pub fn setup(storage: Arc<Mutex<SubmitterStorage>>) -> Result<SubmitterWindow, P
     let formular = formular.clone();
     window.on_submit(move || {
         let mut storage = storage.lock().unwrap();
-        let documents = &mut storage.documents;
-        let tags_m = &mut storage.tags;
-        let links_m = &mut storage.links;
 
         let formular = formular.lock().unwrap();
         let tags = formular
@@ -134,16 +131,14 @@ pub fn setup(storage: Arc<Mutex<SubmitterStorage>>) -> Result<SubmitterWindow, P
             })
             .unwrap_or_default();
 
-        CloudDocumentObject::insert(
+        CloudDocumentObject::insert_form(
             formular.form_title.clone(),
             formular.form_author.clone(),
             formular.form_date.clone(),
             formular.form_loc.clone(),
             tags,
             links,
-            documents,
-            tags_m,
-            links_m,
+            &mut storage.form,
         );
     });
 
