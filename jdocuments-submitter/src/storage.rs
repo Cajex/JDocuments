@@ -10,6 +10,8 @@ use tracing::info;
 
 pub const BYTES_PER_CHUNK: usize = 512;
 
+pub const ASYNC_STORAGE_CHANNEL_WRITE: bool = false;
+
 pub struct SubmitterStorage {
     pub form: StorageForm,
     pub path: PathBuf,
@@ -181,6 +183,7 @@ impl SubmitterStorage {
         )
     }
 
+    //noinspection ALL
     pub fn update(&self) {
         let documents_json = CloudDocumentObject::list_to_pretty_json(&self.form.documents);
         let links_json = CloudLinkObject::list_to_pretty_json(&self.form.links);
@@ -198,33 +201,46 @@ impl SubmitterStorage {
             Ok(())
         }));
 
-        let io_channel = mpsc::channel::<[u8; BYTES_PER_CHUNK]>();
+        if ASYNC_STORAGE_CHANNEL_WRITE {
+            let io_channel = mpsc::channel::<[u8; BYTES_PER_CHUNK]>();
 
-        let writer_thread = thread::spawn(move || -> io::Result<()> {
-            let mut opened = OpenOptions::new().write(true).open(storages.0)?;
-            for chunk in io_channel.1 {
-                opened.write_all(
-                    &chunk
-                        .iter()
-                        .cloned()
-                        .filter(|&b| b != 0)
-                        .collect::<Vec<u8>>(),
-                )?;
+            let writer_thread = thread::spawn(move || -> io::Result<()> {
+                let mut opened = OpenOptions::new().write(true).open(storages.0)?;
+                for chunk in io_channel.1 {
+                    opened.write_all(
+                        &chunk
+                            .iter()
+                            .cloned()
+                            .filter(|&b| b != 0)
+                            .collect::<Vec<u8>>(),
+                    )?;
+                }
+                Ok(())
+            });
+
+            for chunk in documents_json.as_bytes().chunks(BYTES_PER_CHUNK) {
+                let chunk = chunk.to_vec();
+                info!("opened a new chunk with[{}]!", BYTES_PER_CHUNK);
+                let writer = io_channel.0.clone();
+                thread_handles.push(thread::spawn(move || -> io::Result<()> {
+                    let mut buf = [0u8; BYTES_PER_CHUNK];
+                    buf[..chunk.len()].copy_from_slice(&chunk);
+                    println!("{:?}", buf);
+                    writer
+                        .send(buf)
+                        .expect("unable to write chunk to writer thread!");
+                    Ok(())
+                }));
             }
-            Ok(())
-        });
+            drop(io_channel.0);
 
-        for chunk in documents_json.as_bytes().chunks(BYTES_PER_CHUNK) {
-            let chunk = chunk.to_vec();
-            info!("opened a new chunk with[{}]!", BYTES_PER_CHUNK);
-            let writer = io_channel.0.clone();
+            writer_thread.join().unwrap().unwrap();
+            info!("Origin writer channel dropped.");
+        } else {
+            info!("Write sync mode.");
             thread_handles.push(thread::spawn(move || -> io::Result<()> {
-                let mut buf = [0u8; BYTES_PER_CHUNK];
-                buf[..chunk.len()].copy_from_slice(&chunk);
-                println!("{:?}", buf);
-                writer
-                    .send(buf)
-                    .expect("unable to write chunk to writer thread!");
+                let mut opened = OpenOptions::new().write(true).open(storages.0)?;
+                opened.write_all(documents_json.as_bytes())?;
                 Ok(())
             }));
         }
@@ -233,8 +249,5 @@ impl SubmitterStorage {
             info!("Worker thread [{:?}] joined.", handle.thread());
             handle.join().unwrap().unwrap();
         }
-        drop(io_channel.0);
-        info!("Origin writer channel dropped.");
-        writer_thread.join().unwrap().unwrap();
     }
 }

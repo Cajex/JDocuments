@@ -1,4 +1,68 @@
-import { Button } from "std-widgets.slint";
+import { Button, VerticalBox, ListView, HorizontalBox } from "std-widgets.slint";
+
+export enum InsertMode {
+    Latest,
+    ByID
+}
+
+export component EntryComponents {
+    in-out property <[[string]]> entries;
+    in-out property <color> second_color;
+    in-out property <string> primary_font;
+    in-out property <color> accent_color;
+    VerticalLayout {
+        spacing: 5px;
+        for ent[i] in entries: Rectangle {
+            width: parent.width - 40px;
+            x: 0;
+            height: 100px;
+            border-color: root.second_color;
+            border-width: 1px;
+            border-radius: 6px;
+            VerticalLayout {
+                y: 10px;
+                x: 10px;
+                alignment: LayoutAlignment.start;
+                spacing: 10px;
+                HorizontalLayout {
+                    alignment: LayoutAlignment.start;
+                    Text {
+                        font-size: 10px;
+                        font-family: root.primary_font;
+                        color: root.second_color;
+                        text: "Document name: ";
+                        width: 100px;
+                    }
+                    Text {
+                        font-size: 10px;
+                        font-family: root.primary_font;
+                        color: root.accent_color;
+                        text: ent[0];
+                        width: 200px;
+                        wrap: TextWrap.no-wrap;
+                    }
+                }
+                HorizontalLayout {
+                    alignment: LayoutAlignment.start;
+                    Text {
+                        font-size: 10px;
+                        font-family: root.primary_font;
+                        color: root.second_color;
+                        text: "Document ID: ";
+                        width: 100px;
+                    }
+                    Text {
+                        font-size: 10px;
+                        font-family: root.primary_font;
+                        color: root.accent_color;
+                        text: ent[1];
+                    }
+                }
+            }
+        }
+    }
+}
+
 export component SubmitterWindow inherits Window {
     width: 1024px;
     height: 512px;
@@ -12,6 +76,8 @@ export component SubmitterWindow inherits Window {
     in-out property <int> documents_inserted_counter;
     in-out property <int> links_inserted_counter;
     in-out property <int> tags_inserted_counter;
+    in-out property <float> info_scroll_perc: 1;
+    in-out property <[[string]]> entries: [["One", "1"], ["Two", "2"]];
     
     callback document_title_accepted(string);
     callback document_author_accepted(string);
@@ -24,6 +90,7 @@ export component SubmitterWindow inherits Window {
     callback request_tags_len() -> int;
     callback call_init_info();
     callback submit();
+    callback insert_entries(InsertMode, string);
 
     function submit_formular() {
         title_input.text = "";
@@ -111,32 +178,158 @@ export component SubmitterWindow inherits Window {
         HorizontalLayout {
             alignment: LayoutAlignment.center;
             spacing: 30px;
-
             HorizontalLayout {
-                height: 400px;
                 spacing: 30px;
-                HorizontalLayout {
-                    Text {
-                        font-family: primary_font;
-                        font-size: 15px;
-                        font-weight: 600;
-                        height: 25px;
-                        vertical-alignment: TextVerticalAlignment.center;
-                        color: root.second_color;
-                        text: "General";
+                Rectangle {
+                    width: 300px;
+                    TouchArea {
+                        scroll-event(event) => {
+                            if (info_scroll_perc > 0 && info_scroll_perc < 99) {
+                                info_scroll_perc -= event.delta-y * 2 / 10px;
+                            } else {
+                                if (info_scroll_perc <= 0) {
+                                    info_scroll_perc = 0.001;
+                                } else if (info_scroll_perc >= 99) {
+                                    info_scroll_perc = 98.99;
+                                }
+                            }
+                            EventResult.accept;
+                        }
                     }
-                }
-                dot0:=Rectangle {
-                    background: root.second_color;
-                    width: 1px;
                     Rectangle {
-                        y: parent.y;
-                        background: root.background;
-                        border-radius: 30px;
-                        border-color: root.second_color;
-                        border-width: 1px;
-                        width: 25px;
-                        height: 25px;
+                        x: parent.width;
+                        border-radius: 6px;
+                        width: 1px;
+                        background: root.second_color;
+                        Rectangle {
+                            y: parent.height * (info_scroll_perc / 100);
+                            background: root.background;
+                            width: 25px;
+                            height: 25px;
+                            border-radius: 80px;
+                            border-color: root.accent_color;
+                            border-width: 1px;
+                        }
+                    }
+                    Rectangle {
+                        HorizontalLayout {
+                            spacing: 10px;
+                            Rectangle {
+                                y: 5px;
+                                width: 220px;
+                                height: 28px;
+                                border-radius: 6px;
+                                border-width: 1px;
+                                border-color: root.second_color;
+                                Image {
+                                    x: 6px;
+                                    source: @image-url("resources/search.png");
+                                    width: 15px;
+                                    height: 15px;
+                                }
+                                search_text:= Text {
+                                    x: (parent.width / 2) - (self.width / 2);
+                                    text: "search for id";
+                                    font-family: root.primary_font;
+                                    font-size: 10px;
+                                    color: root.second_color;
+                                    visible: true;
+                                }
+                                search_text_input:= TextInput {
+                                    horizontal-alignment: TextHorizontalAlignment.center;
+                                    vertical-alignment: TextVerticalAlignment.center;
+                                    font-family: root.primary_font;
+                                    color: root.second_color;
+                                    input-type: InputType.number;
+                                    selection-background-color: root.selection_background_color;
+                                    edited => {
+                                        search_text.visible = search_text_input.text.is-empty;
+                                    }
+                                    accepted => {
+                                        insert_entries(InsertMode.ByID, search_text_input.text);
+                                        search_text.visible = true;
+                                        search_text_input.text = "";
+                                    }
+                                }
+                            }
+                            Rectangle {
+                                y: 5px;
+                                height: 28px;
+                                width: 28px;
+                                border-radius: 6px;
+                                border-width: 1px;
+                                border-color: root.second_color;
+                                Image {
+                                    source: @image-url("resources/clock.png");
+                                    width: 13px;
+                                    height: 13px;
+                                }
+                                TouchArea {
+                                    clicked => {
+                                        search_text_input.text = "";
+                                        search_text.visible = true;
+                                        insert_entries(InsertMode.Latest, "0");
+                                    }
+                                }
+                            }
+                        }
+
+                        VerticalLayout {
+                           y: 50px;
+                            HorizontalLayout {
+                                Text {
+                                    text: "Documents found: ";
+                                    font-size: 10px;
+                                    font-family: root.primary_font;
+                                    color: root.second_color;
+                                    height: 20px;
+                                    width: 100px;
+                                }
+                                Text {
+                                    text: entries.length;
+                                    font-size: 10px;
+                                    font-family: root.primary_font;
+                                    color: root.accent_color;
+                                    height: 20px;
+                                }
+                            }
+
+                            EntryComponents {
+                                entries: entries;
+                                second_color: second_color;
+                                primary_font: primary_font;
+                                accent_color: accent_color;
+                            }
+                        }
+                    }
+
+                }
+                HorizontalLayout {
+                    height: 400px;
+                    spacing: 30px;
+                    HorizontalLayout {
+                        Text {
+                            font-family: primary_font;
+                            font-size: 15px;
+                            font-weight: 600;
+                            height: 25px;
+                            vertical-alignment: TextVerticalAlignment.center;
+                            color: root.second_color;
+                            text: "General";
+                        }
+                    }
+                    dot0:=Rectangle {
+                        background: root.second_color;
+                        width: 1px;
+                        Rectangle {
+                            y: parent.y;
+                            background: root.background;
+                            border-radius: 30px;
+                            border-color: root.second_color;
+                            border-width: 1px;
+                            width: 25px;
+                            height: 25px;
+                        }
                     }
                 }
             }
