@@ -10,9 +10,22 @@ export component EntryComponents {
     in-out property <color> second_color;
     in-out property <string> primary_font;
     in-out property <color> accent_color;
+    in-out property <brush> background;
+    in-out property <int> position: 0;
+    in-out property <[bool]> range: [false, false, false];
+    callback change_title(string, string);
+
+    function get_name(i: int) -> string {
+        entries[i][0]
+    }
+
+    function get_id(i: int) -> string {
+        entries[i][1]
+    }
+
     VerticalLayout {
-        spacing: 5px;
-        for ent[i] in entries: Rectangle {
+        spacing: 10px;
+        for b[i] in range: Rectangle {
             width: parent.width - 40px;
             x: 0;
             height: 100px;
@@ -37,8 +50,8 @@ export component EntryComponents {
                         font-size: 10px;
                         font-family: root.primary_font;
                         color: root.accent_color;
-                        text: ent[0];
-                        width: 200px;
+                        text: get_name(i + position);
+                        width: 140px;
                         wrap: TextWrap.no-wrap;
                     }
                 }
@@ -55,12 +68,68 @@ export component EntryComponents {
                         font-size: 10px;
                         font-family: root.primary_font;
                         color: root.accent_color;
-                        text: ent[1];
+                        text: get_id(i + position);
+                    }
+                }
+                Rectangle {
+                    edit_title_window:= PopupWindow {
+                        x: ai.mouse-x + 220px;
+                        close-policy: PopupClosePolicy.no-auto-close;
+                        Rectangle {
+                            border-width: 1px;
+                            border-radius: 6px;
+                            border-color: root.second_color;
+                            width: 450px;
+                            height: 25px;
+                            background: root.background;
+                            init => {
+                                ti.focus();
+                            }
+                            ti:=TextInput {
+                                horizontal-alignment: TextHorizontalAlignment.center;
+                                vertical-alignment: TextVerticalAlignment.center;
+                                text: get_name(i + position);
+                                font-size: 10px;
+                                font-family: root.primary_font;
+                                color: root.second_color;
+                                accepted => {
+                                    edit_title_window.close();
+                                    change_title(get_id(i + position), get_name(i + position));
+                                }
+                            }
+                        }
+                    }
+                    border-width: 1px;
+                    border-radius: 6px;
+                    border-color: root.second_color;
+                    height: 25px;
+                    width: 120px;
+                    HorizontalLayout {
+                        y: 6px;
+                        alignment: LayoutAlignment.center;
+                        spacing: 10px;
+                        Text {
+                            text: "change title";
+                            font-size: 10px;
+                            font-family: root.primary_font;
+                            color: root.second_color;
+                        }
+                        Image {
+                            source: @image-url("resources/pen.png");
+                            width: 14px;
+                            height: 14px;
+                        }
+                    }
+                    ai:=TouchArea {
+                        clicked => {
+                            edit_title_window.show();
+                        }
                     }
                 }
             }
         }
     }
+
 }
 
 export component SubmitterWindow inherits Window {
@@ -76,9 +145,10 @@ export component SubmitterWindow inherits Window {
     in-out property <int> documents_inserted_counter;
     in-out property <int> links_inserted_counter;
     in-out property <int> tags_inserted_counter;
-    in-out property <float> info_scroll_perc: 1;
-    in-out property <[[string]]> entries: [["One", "1"], ["Two", "2"]];
-    
+    in-out property <float> info_scroll_perc: 0;
+    in-out property <[[string]]> entries;
+    in-out property <int> position;
+
     callback document_title_accepted(string);
     callback document_author_accepted(string);
     callback document_origin_location_accepted(string);
@@ -91,6 +161,7 @@ export component SubmitterWindow inherits Window {
     callback call_init_info();
     callback submit();
     callback insert_entries(InsertMode, string);
+    callback change_title(string, string);
 
     function submit_formular() {
         title_input.text = "";
@@ -184,16 +255,21 @@ export component SubmitterWindow inherits Window {
                     width: 300px;
                     TouchArea {
                         scroll-event(event) => {
-                            if (info_scroll_perc > 0 && info_scroll_perc < 99) {
-                                info_scroll_perc -= event.delta-y * 2 / 10px;
-                            } else {
-                                if (info_scroll_perc <= 0) {
-                                    info_scroll_perc = 0.001;
-                                } else if (info_scroll_perc >= 99) {
-                                    info_scroll_perc = 98.99;
+                            if (event.delta-y != 0) {
+                                if (event.delta-y > 0) {
+                                    if (info_scroll_perc <= 95) {
+                                       root.info_scroll_perc += 1;
+                                       position+=1;
+                                    }
+                                } else {
+                                    if (root.info_scroll_perc >= 0) {
+                                        root.info_scroll_perc += -1;
+                                        position -= 1
+                                    }
                                 }
+                                EventResult.accept
                             }
-                            EventResult.accept;
+                            EventResult.reject
                         }
                     }
                     Rectangle {
@@ -204,9 +280,9 @@ export component SubmitterWindow inherits Window {
                         Rectangle {
                             y: parent.height * (info_scroll_perc / 100);
                             background: root.background;
-                            width: 25px;
+                            width: 10px;
                             height: 25px;
-                            border-radius: 80px;
+                            border-radius: 6px;
                             border-color: root.accent_color;
                             border-width: 1px;
                         }
@@ -295,10 +371,15 @@ export component SubmitterWindow inherits Window {
                             }
 
                             EntryComponents {
-                                entries: entries;
-                                second_color: second_color;
-                                primary_font: primary_font;
-                                accent_color: accent_color;
+                                entries <=> root.entries;
+                                second_color <=> root.second_color;
+                                primary_font <=> root.primary_font;
+                                accent_color <=> root.accent_color;
+                                background <=> root.background;
+                                position <=> root.position;
+                                change_title(i1, i2) => {
+                                    root.change_title(i1, i2);
+                                }
                             }
                         }
                     }

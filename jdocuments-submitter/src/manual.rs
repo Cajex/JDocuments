@@ -1,6 +1,7 @@
 use crate::storage::SubmitterStorage;
 use jdocuments_commons::CloudDocumentObject;
-use slint::{PlatformError, include_modules};
+use slint::{ModelRc, PlatformError, SharedString, VecModel, include_modules};
+use std::rc::Rc;
 use std::sync::{Arc, Mutex};
 
 include_modules!();
@@ -40,6 +41,35 @@ impl ManualFormular {
 pub fn setup(storage: Arc<Mutex<SubmitterStorage>>) -> Result<SubmitterWindow, PlatformError> {
     let window = SubmitterWindow::new()?;
     let formular = Arc::new(Mutex::new(ManualFormular::new()));
+
+    let entries;
+    {
+        let storage = storage.clone();
+        let storage = storage.lock().unwrap();
+        let mut documents = vec![];
+        let models = storage
+            .form
+            .documents
+            .iter()
+            .map(|doc| {
+                vec![
+                    doc.title
+                        .clone()
+                        .unwrap_or("Not inserted".to_string())
+                        .into(),
+                    doc.id.get_id().to_string().into(),
+                ]
+            })
+            .collect::<Vec<Vec<SharedString>>>();
+        for model in models {
+            documents.push(ModelRc::from(Rc::new(VecModel::from(vec![
+                model[0].clone(),
+                model[1].clone(),
+            ]))));
+        }
+        entries = Rc::new(VecModel::from(documents));
+        window.set_entries(ModelRc::from(entries.clone()));
+    }
 
     {
         let formular = formular.clone();
@@ -119,7 +149,6 @@ pub fn setup(storage: Arc<Mutex<SubmitterStorage>>) -> Result<SubmitterWindow, P
         window.invoke_call_init_info();
     }
 
-
     {
         let storage = storage.clone();
         window.on_request_documents_len(move || {
@@ -141,6 +170,18 @@ pub fn setup(storage: Arc<Mutex<SubmitterStorage>>) -> Result<SubmitterWindow, P
         window.on_request_tags_len(move || {
             let storage = storage.lock().unwrap();
             storage.form.tags.len() as i32
+        });
+    }
+
+    {
+        let storage = storage.clone();
+        window.on_change_title(move |title, id| {
+            let mut storage = storage.lock().unwrap();
+            if let Some(doc) = storage.form.documents.iter_mut()
+                .find(|doc| doc.id.get_id().to_string() == id.to_string())
+            {
+                doc.title = Some(title.to_string());
+            }
         });
     }
 
@@ -167,7 +208,14 @@ pub fn setup(storage: Arc<Mutex<SubmitterStorage>>) -> Result<SubmitterWindow, P
                     .collect::<Vec<String>>()
             })
             .unwrap_or_default();
-
+        entries.push(ModelRc::from(Rc::new(VecModel::from(vec![
+            formular
+                .form_title
+                .clone()
+                .unwrap_or("Not inserted".to_string())
+                .into(),
+            (storage.form.documents.len() + 1).to_string().into(),
+        ]))));
         CloudDocumentObject::insert_form(
             formular.form_title.clone(),
             formular.form_author.clone(),

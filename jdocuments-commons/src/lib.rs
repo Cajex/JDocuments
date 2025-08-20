@@ -9,10 +9,10 @@ pub enum CloudUniqueID {
 
 #[derive(Serialize, Deserialize)]
 pub struct CloudDocumentObject {
-    title: Option<String>,
-    author: Option<String>,
-    vc: VersionControlObject,
-    id: CloudUniqueID,
+    pub title: Option<String>,
+    pub author: Option<String>,
+    pub vc: VersionControlObject,
+    pub id: CloudUniqueID,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -210,6 +210,15 @@ impl CloudLinkObject {
                 link_stack.push(tag)
             }
             Some(link) => link.inner_links.push(id),
+        }
+    }
+}
+
+impl CloudUniqueID {
+    pub fn get_id(&self) -> usize {
+        match self {
+            CloudUniqueID::LinkID(id) => *id,
+            CloudUniqueID::DocumentID(id) => *id,
         }
     }
 }
