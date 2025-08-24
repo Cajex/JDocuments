@@ -167,7 +167,6 @@ export component SubmitterWindow inherits Window {
         title_input.text = "";
         author_input.text = "";
         location_input.text = "";
-        link_input.text = "";
         tag_input.text = "";
         documents_inserted_counter = request_documents_len();
         links_inserted_counter = request_links_len();
@@ -445,11 +444,13 @@ export component SubmitterWindow inherits Window {
                             height: 28px;
                             border-radius: 6px;
                             title_input:=TextInput {
-                                horizontal-alignment: TextHorizontalAlignment.center;
+                                //horizontal-alignment: TextHorizontalAlignment.center;
                                 vertical-alignment: TextVerticalAlignment.center;
                                 color: root.second_color;
-                                width: parent.width - 40px;
+                                //width: parent.width - 40px;
                                 height: parent.height;
+                                single-line: true;
+                                wrap: TextWrap.word-wrap;
                                 selection-background-color: root.selection_background_color;
                                 accepted => {
                                     document_title_accepted(title_input.text);
