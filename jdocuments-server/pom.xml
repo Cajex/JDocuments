@@ -57,7 +57,7 @@
                             <outputDirectory>${project.build.directory}/dist</outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>../dist</directory>
+                                    <directory>../jdocuments-wasm-client/dist/</directory>
                                     <filtering>false</filtering>
                                 </resource>
                             </resources>

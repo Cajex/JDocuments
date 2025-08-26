@@ -4,7 +4,6 @@
 /jdocuments-server/target/
 /jdocuments-server/.mvn/
 /jdocuments-commons/target/
-/jdocuments-wasm-client/target/
 /jdocuments-wasm-client/Cargo.lock
 /jdocuments-commons/Cargo.lock
 JDocuments.iml
