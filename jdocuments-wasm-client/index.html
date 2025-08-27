@@ -1,16 +1,15 @@
 <!DOCTYPE html>
-<!--suppress JSFileReferences -->
-<html lang="de">
+<html>
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>JDocuments</title>
+    <meta charset="utf-8"/>
+    <title>Slint + WASM</title>
+    <link rel="stylesheet" href="style.css">
 </head>
-<body>
-    <canvas id="canvas"></canvas>
-    <script type="module">
-        import init from "jdocuments_wasm_client.js";
-        init();
-    </script>
-</body>
+    <body>
+        <canvas id="canvas"></canvas>
+        <script type="module">
+            import init from "./dist/jdocuments_wasm_client.js";
+            init();
+        </script>
+    </body>
 </html>

@@ -6,7 +6,9 @@ import tech.jilge.server.auth.impl.DefaultCloudUserDatabaseImpl;
 import tech.jilge.server.configuration.ICloudConfigurationProcessor;
 import tech.jilge.server.configuration.impl.DefaultCloudConfigurationProcessorImpl;
 import tech.jilge.server.events.CloudShutdownEvent;
+import tech.jilge.server.events.CloudTerminalCommandEvent;
 import tech.jilge.server.listeners.CloudChannelReadListener;
+import tech.jilge.server.listeners.CloudReadCommandListener;
 import tech.jilge.server.listeners.CloudShutdownChannelListener;
 import tech.jilge.server.listeners.CloudUnexpectedExceptionListener;
 import tech.jilge.server.log.IOTerminal;
@@ -145,17 +147,23 @@ public final class CloudAPI {
 
         this.getTerminal().send("HttpServer blocked...");
 
-        Thread.currentThread().setUncaughtExceptionHandler((t, e) -> CloudAPI
-                .getInstance()
-                .getTerminal()
-                .send(
-                        e.getMessage(),
-                        IOTerminal.Output.ERROR)
-        );
+        Thread.currentThread().setUncaughtExceptionHandler((t, e) -> {
+            CloudAPI.getInstance().getTerminal().send("Exception in" + t.getName() +  " &e" + e.getCause().getMessage(), IOTerminal.Output.ERROR);
+            for (final var stackTraceElement : e.getStackTrace()) {
+                CloudAPI.this
+                        .getTerminal()
+                        .send(
+                                "at " + stackTraceElement.getClass().getName(),
+                                IOTerminal.Output.ERROR);
+            }
+        });
+
+        this.getTerminal().push(input -> this.getEventBus().callEvent(new CloudTerminalCommandEvent(input)));
 
         new CloudUnexpectedExceptionListener();
         new CloudShutdownChannelListener();
         new CloudChannelReadListener();
+        new CloudReadCommandListener();
 
         this.debugQuery((Function<Void, Void>) unused -> {
             for (final var value : HttpImplementedURI.values()) {
