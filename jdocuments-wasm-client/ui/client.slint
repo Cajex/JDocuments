@@ -1,4 +1,4 @@
-component ClientDashboardWindow inherits Window {
+global ColorTheme {
     out property <brush> brush_primary_background : #141414;
     out property <brush> brush_secondary_background : #26252A;
 
@@ -12,23 +12,239 @@ component ClientDashboardWindow inherits Window {
     out property <color> color_icon <=> color_text;
 
     out property <image> image_icon : @image-url("../resources/icon.png");
+}
+
+component ClientDashboardWindow inherits Window {
 
     default-font-family: "SF Mono";
     max-width: 1728px;
     max-height: 1117px;
 
-    icon: image_icon;
-    background: brush_primary_background;
+    icon: ColorTheme.image_icon;
+    background: ColorTheme.brush_primary_background;
     Rectangle {
         width: 100%;
         height: 100%;
         padding: 0px;
         border-width: 0px;
-        background: brush_primary_background;
+        background: ColorTheme.brush_primary_background;
         @children
     }
 }
 
-export component ClientDashboard inherits ClientDashboardWindow {
+component ClientDashboardActionField {
 
+}
+
+component ClientDashboardMenu {
+    VerticalLayout {
+        HorizontalLayout {
+            /* action menu item */
+            HorizontalLayout {
+                ClientDashboardActionField {
+
+                }
+                ClientDashboardActionField {
+
+                }
+                ClientDashboardActionField {
+
+                }
+            }
+            /* search field */
+            HorizontalLayout {
+                Text {
+                    text: "Suchen";
+                }
+                Rectangle {
+
+                }
+            }
+            /* Filter field */
+            HorizontalLayout {
+                ClientDashboardActionField {
+
+                }
+                ClientDashboardActionField {
+
+                }
+                ClientDashboardActionField {
+
+                }
+                ClientDashboardActionField {
+
+                }
+            }
+        }
+        Rectangle {
+            width: 100%;
+            height: 1px;
+            background: ColorTheme.brush_secondary_background;
+        }
+    }
+}
+
+export struct ClientDashboardLinkResult {
+    name: string,
+}
+
+export component ClientDashboardLinkResults {
+    in-out property <[ClientDashboardLinkResult]> results;
+    VerticalLayout {
+        /* descriptor */
+        HorizontalLayout {
+            Text {
+                text: "Verbindungen";
+            }
+            Text {
+                text: results.length;
+                color: ColorTheme.color_emphasize_text;
+            }
+            Image {
+
+            }
+        }
+
+        /* todo: change gridlayout to ver/hor layout */
+
+        GridLayout {
+            for items[i] in results : Rectangle {
+                col: Math.mod(i, 4);
+                row: i / 4;
+                VerticalLayout {
+                    Image {
+
+                    }
+                    Text {
+
+                    }
+                }
+            }
+        }
+    }
+}
+
+export enum ClientDashboardDocumentIcon {
+    PDF,
+    File
+}
+
+export enum ClientDashboardDocumentLanguage {
+    German,
+    Ukrainian
+}
+
+export struct ClientDashboardDocument {
+    title: string,
+    icon: ClientDashboardDocumentIcon,
+    language: ClientDashboardDocumentLanguage,
+    origin: string,
+    author: string,
+    tags: [{name: string, color: color}]
+}
+
+export component ClientDashboardDocuments {
+    in-out property <[ClientDashboardDocument]> documents;
+
+    VerticalLayout {
+        HorizontalLayout {
+            Text {
+                text: "Dokumente";
+            }
+            Text {
+                text: documents.length;
+                color: ColorTheme.color_emphasize_text;
+            }
+            Image {
+
+            }
+        }
+        VerticalLayout {
+            for item[i] in documents : Rectangle {
+                clip: true;
+                VerticalLayout {
+                    HorizontalLayout {
+                        ClientDashboardActionField {
+
+                        }
+                        Text {
+                            text: item.title;
+                            color: ColorTheme.color_emphasize_text;
+                        }
+                    }
+                    VerticalLayout {
+                        HorizontalLayout {
+                            HorizontalLayout {
+                                Text {
+                                    text: "Sprache";
+                                }
+                                Image {
+
+                                }
+                            }
+                            HorizontalLayout {
+                                Text {
+                                    text: "Ursprung";
+                                }
+                                Text {
+                                    color: ColorTheme.color_emphasize_text;
+                                    text: item.origin;
+                                }
+                            }
+                            HorizontalLayout {
+                                Text {
+                                    text: "Autor";
+                                }
+                                Text {
+                                    text: item.author;
+                                    color: ColorTheme.color_emphasize_text;
+                                }
+                            }
+                        }
+
+                        /* todo: change gridlayout to ver/hor layout */
+                        VerticalLayout {
+                            HorizontalLayout {
+
+                            }
+                        }
+
+                        GridLayout {
+                            for tags[x] in item.tags : Rectangle {
+                                col: Math.mod(x, 6);
+                                row: x / 6;
+                                HorizontalLayout {
+                                    Rectangle {
+                                        background: tags.color;
+                                    }
+                                    Text {
+                                        text: tags.name;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+export component ClientDashboard inherits ClientDashboardWindow {
+    /* content */
+    VerticalLayout {
+        /* menu bar */
+        ClientDashboardMenu {
+
+        }
+        /* link results */
+        ClientDashboardLinkResults {
+
+        }
+        /* Documents */
+        ClientDashboardDocuments {
+
+        }
+
+    }
 }
