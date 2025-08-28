@@ -6,6 +6,7 @@ wasm-pack build --release --target web -d dist
 if errorlevel 1 exit /b 1
 
 echo Kopiere statische Dateien...
+robocopy resources dist\resources /E
 copy /Y index.html dist\index.html
 copy /Y style.css dist\style.css
 

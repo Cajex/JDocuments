@@ -1,9 +1,29 @@
-export component ClientDashboardWindow inherits Window {
+component ClientDashboardWindow inherits Window {
+    out property <brush> brush_primary_background : #141414;
+    out property <brush> brush_secondary_background : #26252A;
+
+    out property <color> color_blue : #2573CC;
+    out property <color> color_green : #32AB4F;
+    out property <color> color_yellow : #CBA215;
+    out property <color> color_purple : #5E3A9F;
+
+    out property <color> color_text : #CCCCCC;
+    out property <color> color_emphasize_text <=> color_blue;
+    out property <color> color_icon <=> color_text;
+
+    out property <image> image_icon : @image-url("../resources/icon.png");
+
+    icon: image_icon;
     Rectangle {
         width: 100%;
         height: 100%;
         padding: 0px;
         border-width: 0px;
-        background: white;
+        background: brush_primary_background;
+        @children
     }
+}
+
+export component ClientDashboard inherits ClientDashboardWindow {
+
 }

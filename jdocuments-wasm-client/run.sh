@@ -5,8 +5,11 @@ echo "Baue WebAssembly Client..."
 wasm-pack build --release --target web -d dist
 
 echo "Kopiere statische Dateien..."
+mkdir -p "./dist/resources/"
+
 cp index.html dist/index.html
 cp style.css dist/style.css
+cp -r resources/ ./dist/resources/
 
 echo "Baue Server mit Maven..."
 cd ../jdocuments-server
