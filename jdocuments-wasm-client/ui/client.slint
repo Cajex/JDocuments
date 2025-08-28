@@ -13,7 +13,12 @@ component ClientDashboardWindow inherits Window {
 
     out property <image> image_icon : @image-url("../resources/icon.png");
 
+    default-font-family: "SF Mono";
+    max-width: 1728px;
+    max-height: 1117px;
+
     icon: image_icon;
+    background: brush_primary_background;
     Rectangle {
         width: 100%;
         height: 100%;

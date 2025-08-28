@@ -9,6 +9,14 @@
     <body>
         <canvas id="canvas"></canvas>
         <script type="module">
+            function resizeCanvas() {
+                const canvas = document.querySelector("canvas");
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            window.addEventListener("resize", resizeCanvas);
+            window.addEventListener("load", resizeCanvas);
+
             import init from "./dist/jdocuments_wasm_client.js";
             init();
         </script>
