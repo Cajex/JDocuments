@@ -51,6 +51,15 @@ pub struct StorageForm {
     pub links: Vec<CloudLinkObject>,
 }
 
+#[derive(Serialize, Deserialize)]
+pub struct CloudUserProfile {
+    pub name: String,
+    pub email: String,
+    pub password: String,
+    pub avatar: String,
+    pub permissions: Vec<String>,
+}
+
 pub trait CloudObject {
     type Type;
 
