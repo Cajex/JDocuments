@@ -21,8 +21,9 @@ global DashboardTheme {
     out property <image> image_submit : @image-url("../resources/submit.png");
     out property <image> image_tag : @image-url("../resources/tag.png");
     out property <image> image_versions : @image-url("../resources/versions.png");
+    out property <image> image_search : @image-url("../resources/search.png");
 
-    out property <length> default_icon_size : 32px;
+    out property <length> default_icon_size : 25px;
     out property <length> big_icon_size : 100px;
     out property <length> default_gap_small : 7px;
     out property <length> default_gap_medium : 20px;
@@ -35,7 +36,7 @@ global DashboardTheme {
     out property <length> padding <=> default_gap_small;
 
     out property <length> default_font_size : 24px;
-    out property <length> mdeium_font_size : 36px;
+    out property <length> mdeium_font_size : 25px;
 }
 
 component FolderTab inherits Rectangle {
@@ -68,14 +69,19 @@ component ClientDashboardIconField {
     in property <string> descriptor_text;
     in property <image> image;
     in property <bool> tooltip : false;
+    in property <bool> colorize;
+    in property <brush> background : Colors.transparent;
     in-out property <string> tooltip_text;
     Rectangle {
         clip: false;
         border-radius: root.round ? 800px : DashboardTheme.corner_radius;
         border-width: root.border ? 1px : 0;
         border-color: DashboardTheme.background_widget;
+        horizontal-stretch: 0;
+        max-width: DashboardTheme.default_icon_size + (descriptor ? DashboardTheme.default_gap_medium : DashboardTheme.default_gap_small);
+        background: root.background;
 
-        TouchArea {
+        a:=TouchArea {
             width: 100%;
             height: 100%;
             tooltip_popup:= FolderTab {
@@ -86,7 +92,6 @@ component ClientDashboardIconField {
             }
             property <bool> tw : false;
             changed has-hover => {
-                debug(self.has-hover);
                 if (root.tooltip) {
                     if (self.has-hover) {
                         if (!tw) {
@@ -112,6 +117,12 @@ component ClientDashboardIconField {
                     height: DashboardTheme.default_icon_size;
                     image-rendering: ImageRendering.smooth;
                     source: root.image;
+                    states [
+                        hovered when a.has-hover && root.colorize : {
+                            colorize: DashboardTheme.color_blue;
+                        }
+                    ]
+
                 }
             }
             if descriptor: Text {
@@ -124,15 +135,150 @@ component ClientDashboardIconField {
     }
 }
 
-component ClientDashboardMenu {
+component ClientDashboardContainer {
     Rectangle {
-        background: DashboardTheme.background;
-        ClientDashboardIconField {
-            image: DashboardTheme.image_submit;
-            border: true;
-            round: false;
-            tooltip: true;
-            tooltip_text: "Hello World";
+        background: DashboardTheme.background_widget;
+        border-radius: DashboardTheme.corner_radius;
+        @children
+    }
+}
+
+component ClientDashboardSection {
+    in property <bool> top_line : false;
+    in property <bool> bottom_line : false;
+    in property <length> spacing : 0;
+    VerticalLayout {
+        spacing: root.spacing;
+        if top_line : Rectangle {
+            height: 1px;
+            width: 100%;
+            background: DashboardTheme.background_widget;
+        }
+        @children
+        if bottom_line : Rectangle {
+            height: 1px;
+            width: 100%;
+            background: DashboardTheme.background_widget;
+        }
+    }
+}
+
+component ClientDashboardMenu inherits ClientDashboardSection {
+    bottom_line: true;
+    top_line: true;
+    spacing: 10px;
+    HorizontalLayout {
+        spacing: DashboardTheme.default_gap_large;
+        alignment: LayoutAlignment.space-around;
+        HorizontalLayout {
+            horizontal-stretch: 0;
+            spacing: DashboardTheme.default_gap_small;
+            ClientDashboardIconField {
+                horizontal-stretch: 0;
+                image: DashboardTheme.image_menu;
+                border: true;
+                tooltip: true;
+                tooltip_text: "Menu";
+                colorize: true;
+            }
+            ClientDashboardIconField {
+                horizontal-stretch: 0;
+                image: DashboardTheme.image_profile;
+                border: true;
+                tooltip: true;
+                tooltip_text: "Profile";
+                colorize: true;
+            }
+            ClientDashboardIconField {
+                horizontal-stretch: 0;
+                image: DashboardTheme.image_download;
+                border: true;
+                tooltip: true;
+                tooltip_text: "Download Software";
+                colorize: true;
+            }
+        }
+        HorizontalLayout {
+            spacing: DashboardTheme.default_gap_small;
+            VerticalLayout {
+                horizontal-stretch: 1;
+                alignment: LayoutAlignment.center;
+                Rectangle {
+                    clip: true;
+                    VerticalLayout {
+                        alignment: LayoutAlignment.center;
+                        HorizontalLayout {
+                            padding-left: 10px;
+                            padding-right: 10px;
+                            alignment: LayoutAlignment.start;
+                            Image {
+                                image-rendering: ImageRendering.smooth;
+                                width: DashboardTheme.default_icon_size - 6px;
+                                height: DashboardTheme.default_icon_size - 6px;
+                                source: DashboardTheme.image_search;
+                            }
+                            HorizontalLayout {
+                                horizontal-stretch: 1;
+                                width: 90%;
+                                alignment: LayoutAlignment.center;
+                                Text {
+                                    horizontal-alignment: TextHorizontalAlignment.center;
+                                    vertical-alignment: TextVerticalAlignment.center;
+                                    text: "Suchen oder filtern";
+                                    font-weight: 700;
+                                    color: DashboardTheme.text_color;
+                                }
+                            }
+                        }
+                    }
+                    border-radius: DashboardTheme.corner_radius / 2;
+                    max-width: DashboardTheme.default_text_input_w * 2;
+                    horizontal-stretch: 1;
+                    height: DashboardTheme.default_icon_size + 5px;
+                    preferred-width: DashboardTheme.default_text_input_w;
+                    background: DashboardTheme.background_widget;
+                }
+            }
+        }
+        HorizontalLayout {
+            horizontal-stretch: 0;
+            spacing: -15px;
+            ClientDashboardIconField {
+                image: DashboardTheme.image_versions;
+                background: DashboardTheme.color_green;
+                round: true;
+                tooltip: true;
+                tooltip_text: "Versionen";
+                width: DashboardTheme.default_icon_size + 12px;
+                height: DashboardTheme.default_icon_size + 12px;
+            }
+            ClientDashboardIconField {
+                image: DashboardTheme.image_tag;
+                background: DashboardTheme.color_blue;
+                round: true;
+                tooltip: true;
+                tooltip_text: "Schlagwörter";
+                width: DashboardTheme.default_icon_size + 12px;
+                height: DashboardTheme.default_icon_size + 12px;
+            }
+            ClientDashboardIconField {
+                image: DashboardTheme.image_folder;
+                background: DashboardTheme.color_purple;
+                round: true;
+                tooltip: true;
+                tooltip_text: "Verbindungen";
+                width: DashboardTheme.default_icon_size + 12px;
+                height: DashboardTheme.default_icon_size + 12px;
+            }
+            ClientDashboardIconField {
+                image: DashboardTheme.image_submit;
+                background: DashboardTheme.color_yellow;
+                round: true;
+                tooltip: true;
+                tooltip_text: "Einstellen";
+                width: DashboardTheme.default_icon_size + 12px;
+                height: DashboardTheme.default_icon_size + 12px;
+            }
         }
     }
 }
@@ -140,12 +286,19 @@ component ClientDashboardMenu {
 export component ClientDashboard inherits Window {
     default-font-family: "SF Mono";
     Flickable {
+        Rectangle {
+        background: DashboardTheme.background;
+        width: 100%;
+        height: 100%;
         /* content */
-        VerticalLayout {
-            /* menu bar */
-            ClientDashboardMenu {
+            VerticalLayout {
+                /* menu bar */
+                ClientDashboardMenu {
+
+                }
 
             }
         }
+
     }
 }
