@@ -1,16 +1,17 @@
-global ColorTheme {
-    out property <brush> brush_primary_background : #141414;
-    out property <brush> brush_secondary_background : #26252A;
+global DashboardTheme {
+    out property <brush> background : #141414;
+    out property <brush> background_widget : #26252A;
 
     out property <color> color_blue : #2573CC;
     out property <color> color_green : #32AB4F;
     out property <color> color_yellow : #CBA215;
     out property <color> color_purple : #5E3A9F;
 
-    out property <color> color_text : #CCCCCC;
-    out property <color> color_emphasize_text <=> color_blue;
-    out property <color> color_icon <=> color_text;
+    out property <color> text_color : #CCCCCC;
+    out property <color> text_emphasize <=> color_blue;
+    out property <color> icon_color <=> text_color;
 
+    out property <image> image_rect : @image-url("../resources/rect.png");
     out property <image> image_icon : @image-url("../resources/icon.png");
     out property <image> image_download : @image-url("../resources/download.png");
     out property <image> image_folder : @image-url("../resources/folder.png");
@@ -21,11 +22,11 @@ global ColorTheme {
     out property <image> image_tag : @image-url("../resources/tag.png");
     out property <image> image_versions : @image-url("../resources/versions.png");
 
-    out property <length> default_icon_size : 37px;
+    out property <length> default_icon_size : 32px;
     out property <length> big_icon_size : 100px;
-    out property <length> default_gap_small : 10px;
-    out property <length> default_gap_medium : 30px;
-    out property <length> default_gap_large : 73px;
+    out property <length> default_gap_small : 7px;
+    out property <length> default_gap_medium : 20px;
+    out property <length> default_gap_large : 55px;
 
     out property <length> default_text_input_h : 53px;
     out property <length> default_text_input_w : 500px;
@@ -37,359 +38,114 @@ global ColorTheme {
     out property <length> mdeium_font_size : 36px;
 }
 
-component ClientDashboardWindow inherits Window {
-
-    default-font-family: "SF Mono";
-    max-width: 1728px;
-    max-height: 1117px;
-
-    icon: ColorTheme.image_icon;
-    background: ColorTheme.brush_primary_background;
-    Rectangle {
-        width: 100%;
-        height: 100%;
-        padding: 0px;
-        border-width: 0px;
-        background: ColorTheme.brush_primary_background;
-        @children
+component FolderTab inherits Rectangle {
+    in property <brush>  fcolor: DashboardTheme.background_widget;
+    in property <length> radius       : 12px;
+    in-out property <string> content;
+    width: t.width + DashboardTheme.default_gap_medium;
+    border-radius: radius;
+    background: fcolor;
+    height: 40px;
+    Image {
+        width: DashboardTheme.default_icon_size;
+        height: DashboardTheme.default_icon_size;
+        x: (parent.width - self.width) / 2;
+        y: -(self.height / 2) + 8px;
+        source: DashboardTheme.image_rect;
+        colorize: fcolor;
+        z: 0;
+    }
+    t:=Text {
+        color: DashboardTheme.text_color;
+        text <=> content;
     }
 }
 
-component ClientDashboardActionField {
-    callback on_click();
-    callback on_pointer_event(PointerEvent);
-    in-out property <image> image;
-    in-out property <color> background : Colors.transparent;
-    in-out property <length> border : 1px;
-    in-out property <length> radius : ColorTheme.corner_radius;
-    in-out property <brush> colorize : ColorTheme.color_icon;
-    in-out property <brush> colorize_hover : ColorTheme.color_green;
-    in-out property <bool> hovered : false;
-    states [
-        hovered when area.has-hover : {
-            hovered: true;
-        }
-    ]
-    rect:=Rectangle {
-        background: background;
-        area:=TouchArea {
-            clicked => {
-                on_click();
+component ClientDashboardIconField {
+    in property <bool> round : false;
+    in property <bool> descriptor : false;
+    in property <bool> border : false;
+    in property <string> descriptor_text;
+    in property <image> image;
+    in property <bool> tooltip : false;
+    in-out property <string> tooltip_text;
+    Rectangle {
+        clip: false;
+        border-radius: root.round ? 800px : DashboardTheme.corner_radius;
+        border-width: root.border ? 1px : 0;
+        border-color: DashboardTheme.background_widget;
+
+        TouchArea {
+            width: 100%;
+            height: 100%;
+            tooltip_popup:= FolderTab {
+                visible: false;
+                y: 60px;
+                z: 1;
+                content <=> tooltip_text;
             }
-        }
-        states [
-            hover when area.has-hover && colorize_hover != colorize : {
-                border-radius: 0px;
-            }
-        ]
-        animate border-radius {
-             duration: 50ms;
-             easing: ease-in-out;
-             direction: AnimationDirection.normal;
-        }
-        border-color: ColorTheme.brush_secondary_background;
-        border-width: border;
-        border-radius: radius;
-        width: 57px;
-        height: 57px;
-        clip: true;
-        HorizontalLayout {
-            alignment: LayoutAlignment.center;
-            VerticalLayout {
-                alignment: LayoutAlignment.center;
-                img:=Image {
-                    colorize: colorize;
-                    width: ColorTheme.default_icon_size;
-                    height: ColorTheme.default_icon_size;
-                    padding: 10px;
-                    source: image;
-                    animate colorize {
-                         duration: 100ms;
-                         easing: ease-in-quad;
-                    }
-                    states [
-                        hovered when area.has-hover && colorize_hover != colorize : {
-                            img.colorize: colorize_hover;
+            property <bool> tw : false;
+            changed has-hover => {
+                debug(self.has-hover);
+                if (root.tooltip) {
+                    if (self.has-hover) {
+                        if (!tw) {
+                            tooltip_popup.visible = true;
+                            tw = !tw;
                         }
-                    ]
+                    } else {
+                        if (tw) {
+                            tooltip_popup.visible = false;
+                            tw = !tw;
+                        }
+                    }
                 }
             }
         }
-        @children
+        VerticalLayout {
+            spacing: 9px;
+            padding: descriptor ? DashboardTheme.default_gap_medium : DashboardTheme.default_gap_small;
+            HorizontalLayout {
+                alignment: LayoutAlignment.center;
+                Image {
+                    width: DashboardTheme.default_icon_size;
+                    height: DashboardTheme.default_icon_size;
+                    image-rendering: ImageRendering.smooth;
+                    source: root.image;
+                }
+            }
+            if descriptor: Text {
+                horizontal-alignment: TextHorizontalAlignment.center;
+                vertical-alignment: TextVerticalAlignment.center;
+                text: descriptor_text;
+                color: DashboardTheme.text_emphasize;
+            }
+        }
     }
 }
 
 component ClientDashboardMenu {
-    VerticalLayout {
-        HorizontalLayout {
-            min-width: 1200px;
-            padding: 28px;
-            /* action menu item */
-            HorizontalLayout {
-                alignment: LayoutAlignment.center;
-                spacing: ColorTheme.default_gap_medium;
-                menu:=ClientDashboardActionField {
-                    image: ColorTheme.image_menu;
-                    radius: ColorTheme.corner_radius;
-                }
-                profile:=ClientDashboardActionField {
-                    image: ColorTheme.image_profile;
-                    radius: ColorTheme.corner_radius;
-                }
-                download:=ClientDashboardActionField {
-                    image: ColorTheme.image_download;
-                    radius: ColorTheme.corner_radius;
-                }
-            }
-            /* search field */
-            HorizontalLayout {
-                alignment: LayoutAlignment.center;
-                spacing: ColorTheme.default_gap_medium;
-                Text {
-                    vertical-alignment: TextVerticalAlignment.center;
-                    font-weight: 700;
-                    font-size: ColorTheme.mdeium_font_size;
-                    text: "Suchen";
-                }
-                Rectangle {
-                    width: ColorTheme.default_text_input_w;
-                    height: ColorTheme.default_text_input_h;
-                    background: ColorTheme.brush_secondary_background;
-                    border-radius: ColorTheme.corner_radius;
-                }
-            }
-
-            /* Filter field */
-            Rectangle {
-                in-out property <[{color: color, image: image}]> actions: [
-                    { color: ColorTheme.color_green, image: ColorTheme.image_versions },
-                    { color: ColorTheme.color_blue, image: ColorTheme.image_tag },
-                    { color: ColorTheme.color_purple, image: ColorTheme.image_folder },
-                    { color: ColorTheme.color_yellow, image: ColorTheme.image_submit }
-                ];
-                for item[i] in actions : Rectangle {
-                    ClientDashboardActionField {
-                        background: item.color;
-                        image: item.image;
-                        border: 0px;
-                        radius: 1000px;
-                        colorize_hover: ColorTheme.color_icon;
-                        x: i * 30px;
-                        states [
-                            hover when self.hovered : {
-
-                            }
-                        ]
-                    }
-                }
-            }
-        }
-        Rectangle {
-            width: 100%;
-            height: 1px;
-            background: ColorTheme.brush_secondary_background;
+    Rectangle {
+        background: DashboardTheme.background;
+        ClientDashboardIconField {
+            image: DashboardTheme.image_submit;
+            border: true;
+            round: false;
+            tooltip: true;
+            tooltip_text: "Hello World";
         }
     }
 }
 
-export struct ClientDashboardLinkResult {
-    name: string,
-}
-
-export component ClientDashboardLinkResults {
-    in-out property <[ClientDashboardLinkResult]> results;
-    VerticalLayout {
-        /* descriptor */
-        HorizontalLayout {
-            Text {
-                text: "Verbindungen";
-            }
-            Text {
-                text: results.length;
-                color: ColorTheme.color_emphasize_text;
-            }
-            Image {
-
-            }
-        }
-
+export component ClientDashboard inherits Window {
+    default-font-family: "SF Mono";
+    Flickable {
+        /* content */
         VerticalLayout {
-            spacing: ColorTheme.default_gap_large;
-            for result[i] in results : Rectangle {
-                if Math.mod(i, 3) == 0: HorizontalLayout {
-                    spacing: ColorTheme.default_gap_large;
-                    if i >= results.length: VerticalLayout {
-                        Image {
-                            source: ColorTheme.image_folder;
-                            width: ColorTheme.big_icon_size;
-                            height: ColorTheme.big_icon_size;
-                        }
-                        Text {
-                            text: results[i].name;
-                            color: ColorTheme.color_emphasize_text;
-                        }
-                    }
-                    if i+1 >= results.length: VerticalLayout {
-                        Image {
-                            source: ColorTheme.image_folder;
-                            width: ColorTheme.big_icon_size;
-                            height: ColorTheme.big_icon_size;
-                        }
-                        Text {
-                            text: results[i+1].name;
-                            color: ColorTheme.color_emphasize_text;
-                        }
-                    }
-                    if i+2 >= results.length: VerticalLayout {
-                        Image {
-                            source: ColorTheme.image_folder;
-                            width: ColorTheme.big_icon_size;
-                            height: ColorTheme.big_icon_size;
-                        }
-                        Text {
-                            text: results[i+2].name;
-                            color: ColorTheme.color_emphasize_text;
-                        }
-                    }
-                    if i+3 >= results.length: VerticalLayout {
-                        Image {
-                            source: ColorTheme.image_folder;
-                            width: ColorTheme.big_icon_size;
-                            height: ColorTheme.big_icon_size;
-                        }
-                        Text {
-                            text: results[i+3].name;
-                            color: ColorTheme.color_emphasize_text;
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-export enum ClientDashboardDocumentIcon {
-    PDF,
-    File
-}
-
-export enum ClientDashboardDocumentLanguage {
-    German,
-    Ukrainian
-}
-
-export struct ClientDashboardDocument {
-    title: string,
-    icon: ClientDashboardDocumentIcon,
-    language: ClientDashboardDocumentLanguage,
-    origin: string,
-    author: string,
-    tags: [{name: string, color: color}]
-}
-
-export component ClientDashboardDocuments {
-    in-out property <[ClientDashboardDocument]> documents;
-
-    VerticalLayout {
-        HorizontalLayout {
-            Text {
-                text: "Dokumente";
-            }
-            Text {
-                text: documents.length;
-                color: ColorTheme.color_emphasize_text;
-            }
-            Image {
+            /* menu bar */
+            ClientDashboardMenu {
 
             }
         }
-        VerticalLayout {
-            for item[i] in documents : Rectangle {
-                clip: true;
-                VerticalLayout {
-                    HorizontalLayout {
-                        ClientDashboardActionField {
-
-                        }
-                        Text {
-                            text: item.title;
-                            color: ColorTheme.color_emphasize_text;
-                        }
-                    }
-                    VerticalLayout {
-                        HorizontalLayout {
-                            HorizontalLayout {
-                                Text {
-                                    text: "Sprache";
-                                }
-                                Image {
-
-                                }
-                            }
-                            HorizontalLayout {
-                                Text {
-                                    text: "Ursprung";
-                                }
-                                Text {
-                                    color: ColorTheme.color_emphasize_text;
-                                    text: item.origin;
-                                }
-                            }
-                            HorizontalLayout {
-                                Text {
-                                    text: "Autor";
-                                }
-                                Text {
-                                    text: item.author;
-                                    color: ColorTheme.color_emphasize_text;
-                                }
-                            }
-                        }
-
-                        /* todo: change gridlayout to ver/hor layout */
-                        VerticalLayout {
-                            HorizontalLayout {
-
-                            }
-                        }
-                        /*
-                        GridLayout {
-                            for tags[x] in item.tags : Rectangle {
-                                col: Math.mod(x, 6);
-                                row: x / 6;
-                                HorizontalLayout {
-                                    Rectangle {
-                                        background: tags.color;
-                                    }
-                                    Text {
-                                        text: tags.name;
-                                    }
-                                }
-                            }
-                        }
-                        */
-                    }
-                }
-            }
-        }
-    }
-}
-
-export component ClientDashboard inherits ClientDashboardWindow {
-    /* content */
-    VerticalLayout {
-        /* menu bar */
-        ClientDashboardMenu {
-
-        }
-        /* link results */
-        ClientDashboardLinkResults {
-
-        }
-        /* Documents */
-        ClientDashboardDocuments {
-
-        }
-
     }
 }
