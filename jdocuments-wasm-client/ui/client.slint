@@ -1,6 +1,11 @@
+import { ComboBox } from "std-widgets.slint";
+import "../resources/SF-Pro-Display-Regular.otf";
+
 global DashboardTheme {
+    out property <string> font : "SF-Pro-Display-Regular";
     out property <brush> background : #141414;
     out property <brush> background_widget : #26252A;
+    out property <brush> background_widget_light :#34323A;
 
     out property <color> color_blue : #2573CC;
     out property <color> color_green : #32AB4F;
@@ -8,6 +13,7 @@ global DashboardTheme {
     out property <color> color_purple : #5E3A9F;
 
     out property <color> text_color : #CCCCCC;
+    out property <color> text_color_first : #8f8c8c;
     out property <color> text_emphasize <=> color_blue;
     out property <color> icon_color <=> text_color;
 
@@ -22,6 +28,7 @@ global DashboardTheme {
     out property <image> image_tag : @image-url("../resources/tag.png");
     out property <image> image_versions : @image-url("../resources/versions.png");
     out property <image> image_search : @image-url("../resources/search.png");
+    out property <image> image_star : @image-url("../resources/star.png");
 
     out property <length> default_icon_size : 25px;
     out property <length> big_icon_size : 100px;
@@ -35,8 +42,9 @@ global DashboardTheme {
     out property <length> corner_radius : 12px;
     out property <length> padding <=> default_gap_small;
 
-    out property <length> default_font_size : 24px;
+    out property <length> default_font_size : 19px;
     out property <length> mdeium_font_size : 25px;
+    out property <length> small_font_size : DashboardTheme.default_font_size / 2.1;
 }
 
 component FolderTab inherits Rectangle {
@@ -283,8 +291,179 @@ component ClientDashboardMenu inherits ClientDashboardSection {
     }
 }
 
+component ClientDashboardButton {
+    in property <bool> icon;
+    in property <image> icon_source;
+    in property <string> text;
+    in property <bool> count;
+    in property <int> counti;
+    in property <bool> round;
+    Rectangle {
+        vertical-stretch: 0;
+        horizontal-stretch: 0;
+        clip: true;
+        height: 33px;
+        border-width: 1px;
+        border-color: DashboardTheme.background_widget;
+        border-radius: round ? 50px : 6px;
+        VerticalLayout {
+            vertical-stretch: 0;
+            padding: DashboardTheme.default_gap_small;
+            alignment: LayoutAlignment.center;
+            HorizontalLayout {
+                alignment: LayoutAlignment.space-around;
+                spacing: DashboardTheme.default_gap_small;
+                horizontal-stretch: 0;
+                if icon : Image {
+                    vertical-alignment: ImageVerticalAlignment.center;
+                    width: 13px;
+                    height: 13px;
+                    source: icon_source;
+                }
+                Text {
+                    font-weight: 700;
+                    vertical-alignment: TextVerticalAlignment.center;
+                    font-size: DashboardTheme.default_font_size / 1.9;
+                    color: DashboardTheme.text_color;
+                    text: text;
+                }
+                if count: Rectangle {
+                    width: 40px;
+                    height: 17px;
+                    border-radius: 5px;
+                    border-color: DashboardTheme.background_widget_light;
+                    background: DashboardTheme.background_widget_light;
+                    Text {
+                        font-size: DashboardTheme.default_font_size / 1.9;
+                        color: DashboardTheme.text_color;
+                        text: counti;
+                        horizontal-alignment: TextHorizontalAlignment.center;
+                        vertical-alignment: TextVerticalAlignment.center;
+                    }
+                }
+            }
+        }
+    }
+}
+
+export component ClientDashboardNavigation inherits ClientDashboardSection {
+    property <[string]> link : ["Jilge", "documents"];
+    bottom_line: true;
+    VerticalLayout {
+        height: root.width > 700px ? 90px : 120px;
+        alignment: LayoutAlignment.space-around;
+        padding-left: 24px;
+        padding-right: 24px;
+        HorizontalLayout {
+            VerticalLayout {
+                HorizontalLayout {
+                padding-top: 13px;
+                    alignment: LayoutAlignment.start;
+                    spacing: DashboardTheme.default_gap_small;
+                    for link[i] in link: HorizontalLayout {
+                        alignment: LayoutAlignment.start;
+                        spacing: DashboardTheme.default_gap_small;
+                        Text {
+                            color: i == 0 ?  DashboardTheme.text_color_first : DashboardTheme.text_color;
+                            font-weight: 900;
+                            font-size: 19px;
+                            text: link;
+                        }
+                        Text {
+                            color: i == 0 ?  DashboardTheme.text_color_first : DashboardTheme.text_color;
+                            font-weight: 900;
+                            font-size: 19px;
+                            text: "/";
+                        }
+                    }
+                }
+            }
+            if root.width > 700px : HorizontalLayout {
+                padding-top: 15px;
+                spacing: DashboardTheme.default_gap_small;
+                ClientDashboardButton {
+                    width: 120px;
+                    horizontal-stretch: 0;
+                    text: "Angemerkt";
+                    count: true;
+                    counti: 12;
+                }
+                ClientDashboardButton {
+                    width: 120px;
+                    horizontal-stretch: 0;
+                    text: "Versionen";
+                    icon: true;
+                    icon_source: DashboardTheme.image_versions;
+                }
+            }
+        }
+        Text {
+            color: DashboardTheme.text_color_first;
+            text: "Dokumente können in mehreren Ordnern liegen, Schlagwörter zum Filtern";
+        }
+        if root.width < 700px : HorizontalLayout {
+                spacing: DashboardTheme.default_gap_small;
+                ClientDashboardButton {
+                    width: 120px;
+                    horizontal-stretch: 0;
+                    text: "Angemerkt";
+                    count: true;
+                    counti: 12;
+                }
+                ClientDashboardButton {
+                    width: 120px;
+                    horizontal-stretch: 0;
+                    text: "Versionen";
+                    icon: true;
+                    icon_source: DashboardTheme.image_versions;
+                }
+        }
+    }
+
+}
+
+export component ClientDashboardLinkNavigation {
+    Rectangle {
+        y: 20px;
+        width: 96%;
+        height: 160px;
+        border-radius: DashboardTheme.corner_radius;
+        border-width: 1px;
+        border-color: DashboardTheme.background_widget;
+        clip: true;
+        VerticalLayout {
+            alignment: LayoutAlignment.center;
+            padding: DashboardTheme.default_gap_medium;
+            spacing: DashboardTheme.default_gap_medium;
+            HorizontalLayout {
+                spacing: DashboardTheme.default_gap_small;
+                height: 26px;
+                Image {
+                    source: DashboardTheme.image_folder;
+                    width: DashboardTheme.default_icon_size;
+                    height: DashboardTheme.default_icon_size;
+                }
+                Text {
+                    color: DashboardTheme.text_color;
+                    vertical-alignment: TextVerticalAlignment.center;
+                    text: "Verbindungen";
+                }
+            }
+            ComboBox {
+                width: 100%;
+                height: 28px;
+                model: ["documents", "KO1", "KO2", "KO3"];
+            }
+            Text {
+                color: DashboardTheme.text_color_first;
+                text: "Dokumente können in mehreren Ordnern gleichzeitig liegen (Sammlungen).";
+            }
+        }
+    }
+}
+
 export component ClientDashboard inherits Window {
-    default-font-family: "SF Mono";
+    default-font-family: DashboardTheme.font;
     Flickable {
         Rectangle {
         background: DashboardTheme.background;
@@ -296,7 +475,12 @@ export component ClientDashboard inherits Window {
                 ClientDashboardMenu {
 
                 }
+                ClientDashboardNavigation {
 
+                }
+                ClientDashboardLinkNavigation {
+
+                }
             }
         }
 
