@@ -147,16 +147,7 @@ public final class CloudAPI {
 
         this.getTerminal().send("HttpServer blocked...");
 
-        Thread.currentThread().setUncaughtExceptionHandler((t, e) -> {
-            CloudAPI.getInstance().getTerminal().send("Exception in" + t.getName() +  " &e" + e.getCause().getMessage(), IOTerminal.Output.ERROR);
-            for (final var stackTraceElement : e.getStackTrace()) {
-                CloudAPI.this
-                        .getTerminal()
-                        .send(
-                                "at " + stackTraceElement.getClass().getName(),
-                                IOTerminal.Output.ERROR);
-            }
-        });
+
 
         this.getTerminal().push(input -> this.getEventBus().callEvent(new CloudTerminalCommandEvent(input)));
 
@@ -166,6 +157,7 @@ public final class CloudAPI {
         new CloudReadCommandListener();
 
         this.debugQuery((Function<Void, Void>) unused -> {
+            this.getTerminal().send("Current user directory: [" + System.getProperty("user.dir") + "]");
             for (final var value : HttpImplementedURI.values()) {
                 for (final var availableURI : value.getUri()) {
                     for (final var file : Objects.requireNonNull(value.getTargetPackage().listFiles())) {

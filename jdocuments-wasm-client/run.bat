@@ -24,5 +24,4 @@ mvn -Didea.version=2025.2 ^
 if errorlevel 1 exit /b 1
 
 echo ▶ Starte Server...
-cd target
-java -jar jdocuments-server-1.0-SNAPSHOT-jar-with-dependencies.jar
+start run.bat
