@@ -9,7 +9,7 @@ import java.util.List;
 
 @Getter
 public enum HttpImplementedURI {
-    INDEX(List.of(URI.create("/login/test/")), new File("/target/dist"));
+    INDEX(List.of(URI.create("/login/test/")), new File("dist"));
 
     private final List<URI> uri;
     private final File targetPackage;

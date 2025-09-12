@@ -6,6 +6,6 @@ slint::include_modules!();
 #[cfg_attr(target_arch = "wasm32",
     wasm_bindgen::prelude::wasm_bindgen(start))]
 pub fn main() {
-    let main_window = ClientDashboard::new().unwrap();
+    let main_window = TestWindow::new().unwrap();
     main_window.run().unwrap();
 }

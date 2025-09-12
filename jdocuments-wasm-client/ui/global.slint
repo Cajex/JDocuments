@@ -1,0 +1,106 @@
+export global ProductTheme {
+    // — Spacing (4px-Grid)
+    out property <length> gap_0 : 4px;
+    out property <length> gap_1 : 8px;
+    out property <length> gap_2 : 12px;
+
+    out property <length> gap_3 : 16px;
+    out property <length> gap_4 : 24px;
+    out property <length> gap_5 : 32px;
+
+    // — Corner Radii
+    out property <length> corner_radius_0 : 6px;
+    out property <length> corner_radius_1 : 12px;
+    // sinnvolle Erweiterungen
+    out property <length> corner_radius_2 : 16px;
+    out property <length> corner_radius_3 : 24px;
+
+    // — Icon Sizes
+    out property <length> icon_size_0 : 14px;
+
+    out property <length> icon_size_1 : 16px;
+    out property <length> icon_size_2 : 19px;
+    out property <length> icon_size_3 : 24px;
+
+    // — Typografie
+    out property <length> font_size_0 : 12px; // xs
+    out property <length> font_size_1 : 14px; // sm
+    out property <length> font_size_2 : 16px; // base
+    out property <length> font_size_3 : 18px; // lg
+    out property <length> font_size_4 : 22px; // xl
+
+    out property <int> font_weight_0: 300;
+    out property <int> font_weight_1: 400;
+    out property <int> font_weight_2: 600;
+    out property <int> font_weight_3: 900;
+
+    // — Palette
+    out property <brush> background_canvas : #0d1117; // Body
+    out property <brush> background_panel  : #161b22; // Cards/Panels
+    out property <brush> background_subtle : #0e1116; // Breadcrumb/Toolbar
+    out property <brush> surface_button    : #21262d;
+    out property <brush> surface_button_hover : #30363d;
+
+    out property <color> border_color  : #30363d;
+    out property <color> divider_color : #30363d;
+
+    out property <color> text_color  : #c9d1d9;
+    out property <color> text_muted  : #8b949e;
+    out property <color> link_color  : #1f6feb;
+
+    // — States / Accents
+    out property <color> primary        : #238636;
+    out property <color> primary_hover  : #2ea043;
+    out property <color> danger         : #da3633;
+    out property <color> danger_emph    : #f85149;
+    out property <color> warning        : #d29922;
+    out property <color> info           : #1f6feb;
+    out property <color> success_fg     : #7ee787;
+    out property <color> danger_fg      : #ffa198;
+
+    // — Tinted Surfaces (Toasts/Alerts)
+    out property <brush> bg_success_tint : #041e12;
+    out property <brush> bg_danger_tint  : #2d0a0a;
+    out property <brush> bg_warning_tint : #2b2111;
+    out property <brush> bg_info_tint    : #0c2d6b;
+
+    // — Focus / Overlay / Border
+    out property <color>   focus_ring        : #1f6feb;
+    out property <length>  border_width_0    : 1px;
+    out property <length>  border_width_1    : 2px;
+    out property <brush>   overlay_scrim     : rgba(0,0,0,0.60);
+
+    // — Animationen
+    out property <duration> dur_fast   : 120ms;
+    out property <duration> dur_normal : 180ms;
+    out property <duration> dur_slow   : 250ms;
+
+    // — Schatten
+    out property <color> shadow_0 : #00000066;
+    out property <color> shadow_1 : #00000099;
+
+    // — Akzentfarben
+    out property <color> blue   : #2573CC;
+    out property <color> green  : #32AB4F;
+    out property <color> yellow : #CBA215;
+    out property <color> purple : #5E3A9F;
+
+    out property <brush> background_0 : background_canvas;
+    out property <brush> background_1 : background_panel;
+    out property <brush> background_2 : background_subtle;
+}
+
+export global ProductImages {
+    out property <image> image_rect : @image-url("../resources/rect.png");
+    out property <image> image_icon : @image-url("../resources/icon.png");
+    out property <image> image_download : @image-url("../resources/download.png");
+    out property <image> image_folder : @image-url("../resources/folder.png");
+    out property <image> image_menu : @image-url("../resources/menu.png");
+    out property <image> image_pdf : @image-url("../resources/pdf.png");
+    out property <image> image_profile : @image-url("../resources/profile.png");
+    out property <image> image_submit : @image-url("../resources/submit.png");
+    out property <image> image_tag : @image-url("../resources/tag.png");
+    out property <image> image_versions : @image-url("../resources/versions.png");
+    out property <image> image_search : @image-url("../resources/search.png");
+    out property <image> image_star : @image-url("../resources/star.png");
+}

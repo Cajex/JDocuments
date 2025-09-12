@@ -1,0 +1,329 @@
+import { ProductTheme, ProductImages } from "global.slint";
+import "../resources/SF-Pro-Display-Regular.otf";
+
+export component ButtonComponent inherits Rectangle {
+    in-out property <string> text;
+    in-out property <{image: image, v: bool}> image : { image: ProductImages.image_icon, v: false };
+    in-out property <bool> visible_background : true;
+    callback on_click();
+
+    border-width: ProductTheme.border_width_0;
+    border-radius: ProductTheme.corner_radius_0;
+    border-color: ProductTheme.border_color;
+    in property <brush> surface : visible_background ? ProductTheme.surface_button : ProductTheme.background_canvas;
+    in property <brush> hover_surface : visible_background ? ProductTheme.surface_button_hover : ProductTheme.background_canvas;
+
+    background: surface;
+    animate background {
+         duration: ProductTheme.dur_fast;
+         easing: ease-out-bounce;
+         direction: AnimationDirection.normal;
+    }
+    a:=TouchArea {
+        changed has-hover => {
+            root.background = a.has-hover ? hover_surface : surface;
+        }
+        clicked => {
+            on_click();
+        }
+    }
+    HorizontalLayout {
+        padding: ProductTheme.gap_2;
+        spacing: ProductTheme.gap_1;
+        alignment: LayoutAlignment.center;
+        if image.v: Image {
+            vertical-alignment: ImageVerticalAlignment.center;
+            width: ProductTheme.icon_size_2;
+            height: ProductTheme.icon_size_2;
+            source: image.image;
+            image-rendering: ImageRendering.smooth;
+        }
+        Text {
+            vertical-alignment: TextVerticalAlignment.center;
+            text <=> text;
+            color: ProductTheme.text_color;
+            font-size: ProductTheme.font_size_1;
+            font-weight: ProductTheme.font_weight_1;
+        }
+    }
+}
+
+export component DisplayComponent {
+
+}
+
+export component ContainerComponent inherits Rectangle {
+    in-out property <bool> visible_background : true;
+    in-out property <{title: string, v: bool}> title : { title: "", v: false };
+    background: visible_background ? ProductTheme.background_panel : ProductTheme.background_canvas;
+    border-radius: ProductTheme.corner_radius_1;
+    border-color: ProductTheme.border_color;
+    border-width: ProductTheme.border_width_0;
+    VerticalLayout {
+        spacing: ProductTheme.gap_2;
+        if title.v: Text {
+            vertical-alignment: TextVerticalAlignment.center;
+            horizontal-alignment: TextHorizontalAlignment.left;
+            text: title.title;
+            color: ProductTheme.text_color;
+            font-size: ProductTheme.font_size_1;
+            font-weight: ProductTheme.font_weight_2;
+        }
+        padding: ProductTheme.gap_2;
+        @children
+    }
+}
+
+export component MenuComponent {
+    
+}
+
+export component TextInputComponent inherits Rectangle {
+    in-out property <string> preset;
+    in-out property <{image: image, v: bool}> image : { image: ProductImages.image_icon, v: false };
+    border-radius: ProductTheme.corner_radius_0;
+    border-color: ProductTheme.border_color;
+    border-width: ProductTheme.border_width_0;
+    HorizontalLayout {
+        padding: ProductTheme.gap_2;
+        spacing: ProductTheme.gap_1;
+        if image.v: Image {
+            vertical-alignment: ImageVerticalAlignment.center;
+            width: ProductTheme.icon_size_2;
+            height: ProductTheme.icon_size_2;
+            source: image.image;
+            image-rendering: ImageRendering.smooth;
+        }
+        input:=TextInput {
+            text: preset;
+            color: ProductTheme.text_muted;
+            font-size: ProductTheme.font_size_1;
+            vertical-alignment: TextVerticalAlignment.center;
+            horizontal-alignment: TextHorizontalAlignment.left;
+            changed has-focus => {
+                self.text = self.has-focus ? "" : preset;
+                self.color = self.has-focus ? ProductTheme.text_color : ProductTheme.text_muted;
+                root.border-color = self.has-focus ? ProductTheme.blue : ProductTheme.border_color;
+                root.border-width = self.has-focus ? ProductTheme.border_width_1 : ProductTheme.border_width_0;
+            }
+        }
+    }
+}
+
+export component SearchComponent {
+
+}
+
+export struct TableComponentEntry {
+    color: color,
+    text: { text: string, v: bool },
+    description: { desc: string, v: bool },
+    image: { image: image, v: bool },
+    display: { display: string, v: bool, },
+}
+
+export component TableComponent inherits Rectangle {
+    in-out property <[string]> displays : ["Display 0", "Display 1", "Display 2"];
+    in-out property <[[TableComponentEntry]]> entries;
+    in-out property <length> min_spacing : 200px;
+    border-radius: ProductTheme.corner_radius_1;
+    border-color: ProductTheme.border_color;
+    border-width: ProductTheme.border_width_0;
+    VerticalLayout {
+        padding: ProductTheme.gap_2;
+        spacing: ProductTheme.gap_1;
+        h:=HorizontalLayout {
+            alignment: LayoutAlignment.space-between;
+            for display[i] in displays: Text {
+                text: display;
+                color: ProductTheme.text_muted;
+                font-size: ProductTheme.font_size_0;
+                font-weight: ProductTheme.font_weight_1;
+                vertical-alignment: TextVerticalAlignment.center;
+                horizontal-alignment: TextHorizontalAlignment.left;
+            }
+        }
+        Rectangle {
+            height: ProductTheme.border_width_0;
+            background: ProductTheme.border_color;
+        }
+        VerticalLayout {
+            for line[i] in entries: HorizontalLayout {
+                spacing: min_spacing;
+                for entry[x] in line: HorizontalLayout {
+                    spacing: ProductTheme.gap_1;
+                    if entry.image.v : Image {
+                        vertical-alignment: ImageVerticalAlignment.center;
+                        width: ProductTheme.icon_size_1;
+                        height: ProductTheme.icon_size_1;
+                        source: entry.image.image;
+                        image-rendering: ImageRendering.smooth;
+                    }
+                    if entry.text.v : VerticalLayout {
+                        spacing: ProductTheme.gap_0;
+                        Text {
+                            text: entry.text.text;
+                            color: ProductTheme.text_color;
+                            font-size: ProductTheme.font_size_1;
+                            vertical-alignment: TextVerticalAlignment.center;
+                            horizontal-alignment: TextHorizontalAlignment.left;
+                        }
+                        if entry.description.v : Text {
+                            text: entry.text.text;
+                            color: ProductTheme.text_muted;
+                            font-size: ProductTheme.font_size_0;
+                            vertical-alignment: TextVerticalAlignment.center;
+                            horizontal-alignment: TextHorizontalAlignment.left;
+                        }
+                    }
+                    if entry.display.v: Rectangle {
+                    border-radius: ProductTheme.corner_radius_2;
+                    border-color: ProductTheme.border_color;
+                    background: ProductTheme.background_subtle;
+                    border-width: ProductTheme.border_width_0;
+
+                        Text {
+                            padding: ProductTheme.gap_0;
+                            text: entry.display.display;
+                            color: ProductTheme.text_color;
+                            font-size: ProductTheme.font_size_0;
+                            vertical-alignment: TextVerticalAlignment.center;
+                            horizontal-alignment: TextHorizontalAlignment.left;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+export component LogicalLinkComponent {
+
+}
+
+export component TestWindow inherits Window {
+    out property <string> font : "SF-Pro-Display-Regular";
+
+    out property <[[TableComponentEntry]]> entries : [
+        // ───────────── Row 1 ─────────────
+        [
+            // Col 1: Name
+             {
+                color: ProductTheme.text_color,
+                image: { image: ProductImages.image_pdf, v: true },
+                text:  { text: "Onboarding-Handbuch.pdf", v: true },
+                description: { desc: "/Company/HR", v: true },
+                display: { display: "", v: false },
+            },
+            // Col 2: Tag
+            {
+                color: ProductTheme.text_color,
+                image: { image: ProductImages.image_tag, v: true },
+                text:  { text: "", v: false },
+                description: { desc: "", v: false },
+                display: { display: "#policy", v: true },
+            },
+            // Col 3: Updated
+            {
+                color: ProductTheme.text_muted,
+                image: { image: ProductImages.image_versions, v: false },
+                text:  { text: "2d ago", v: true },
+                description: { desc: "", v: false },
+                display: { display: "", v: false },
+            }
+        ],
+
+        // ───────────── Row 2 ─────────────
+        [
+            // Col 1: Name
+            {
+                color: ProductTheme.text_color,
+                image: { image: ProductImages.image_icon, v: true },
+                text:  { text: "Marketing-Roadmap.md", v: true },
+                description: { desc: "/Teams/Marketing", v: true },
+                display: { display: "", v: false },
+            },
+            // Col 2: Tag
+            {
+                color: ProductTheme.text_color,
+                image: { image: ProductImages.image_tag, v: true },
+                text:  { text: "", v: false },
+                description: { desc: "", v: false },
+                display: { display: "#strategie", v: true },
+            },
+            // Col 3: Updated
+            {
+                color: ProductTheme.text_muted,
+                image: { image: ProductImages.image_versions, v: false },
+                text:  { text: "10h ago", v: true },
+                description: { desc: "", v: false },
+                display: { display: "", v: false },
+            }
+        ],
+
+        // ───────────── Row 3 ─────────────
+        [
+            // Col 1: Name
+            {
+                color: ProductTheme.text_color,
+                image: { image: ProductImages.image_folder, v: true },
+                text:  { text: "Design-System.fig", v: true },
+                description: { desc: "/Design/Assets", v: true },
+                display: { display: "", v: false },
+            },
+            // Col 2: Tag
+            {
+                color: ProductTheme.text_color,
+                image: { image: ProductImages.image_tag, v: true },
+                text:  { text: "", v: false },
+                description: { desc: "", v: false },
+                display: { display: "#ui", v: true },
+            },
+            // Col 3: Updated
+            {
+                color: ProductTheme.text_muted,
+                image: { image: ProductImages.image_versions, v: false },
+                text:  { text: "7d ago", v: true },
+                description: { desc: "", v: false },
+                display: { display: "", v: false },
+            }
+        ]
+    ];
+    default-font-family: font;
+    background: ProductTheme.background_canvas;
+    VerticalLayout {
+        alignment: LayoutAlignment.center;
+        HorizontalLayout {
+            alignment: LayoutAlignment.center;
+            ContainerComponent {
+                title: { title: "Test", v: true };
+                TextInputComponent {
+                    image: { image: ProductImages.image_search, v: true };
+                    preset: "api, backend and other stuff";
+                }
+                ButtonComponent {
+                    image: { image: ProductImages.image_search, v: true };
+                    visible_background: true;
+                    text: "Commit";
+                }
+                HorizontalLayout {
+                    spacing: ProductTheme.gap_1;
+                    ButtonComponent {
+                        image: { image: ProductImages.image_search, v: false };
+                        visible_background: false;
+                        text: "+";
+                    }
+                    ButtonComponent {
+                        image: { image: ProductImages.image_search, v: false };
+                        visible_background: false;
+                        text: "-";
+                    }
+                }
+                TableComponent {
+                    displays: ["Name", "Tag", "Updated"];
+                    entries <=> entries;
+                }
+            }
+        }
+    }   
+}
