@@ -339,6 +339,59 @@ export component LogicalLinkComponent inherits HorizontalLayout {
     }
 }
 
+export struct LatestChangeEntry {
+    date: string,
+    desc: string,
+}
+
+export component LatestChangesComponent inherits Rectangle {
+    in-out property <[LatestChangeEntry]> changes : [{ date: "18 hours ago", desc: "GitHub Copilot in VS Code August release (v1.104)"},
+                                                     { date: "2 days ago", desc: "Bring Your Own Key (BYOK) support for JetBrains IDEs and Xcode in public preview"},
+                                                     { date: "5 days ago", desc: "Fixed a bug where automatic updates were disabled by default for everyone. (#38022)"}
+                                                     ];
+    Path {
+        x: l.x;
+        y: l.y;
+        z: 5;
+        height: l.height;
+        width: 5px;
+        stroke-width: 1px;
+        stroke: ProductTheme.surface_button_hover;
+        LineTo {
+         x: 1; y: 1;
+        }
+        LineTo {
+         x: 1; y: 2;
+        }
+    }
+    c:=ContainerComponent {
+        title: { title: "Latest Changes", v: true };
+        l:=VerticalLayout {
+            spacing: ProductTheme.gap_2;
+            for change[i] in changes: HorizontalLayout {
+                spacing: ProductTheme.gap_2;
+                Rectangle {
+                    border-radius: 1000px;
+                    background: ProductTheme.surface_button_hover;
+                    width: 5px;
+                    height: ProductTheme.icon_size_0;
+                }
+                VerticalLayout {
+                    spacing: ProductTheme.gap_0;
+                    Text {
+                        text: change.date;
+                        color: ProductTheme.text_muted;
+                    }
+                    Text {
+                        text: change.desc;
+                        color: ProductTheme.text_color;
+                    }
+                }
+            }
+        }
+    }
+}
+
 export component TestWindow inherits Window {
     out property <string> font : "SF-Pro-Display-Regular";
 
@@ -467,6 +520,9 @@ export component TestWindow inherits Window {
                     LogicalLinkComponent {
 
                     }
+                }
+                LatestChangesComponent {
+
                 }
             }
         }
