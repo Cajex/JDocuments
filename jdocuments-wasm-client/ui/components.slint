@@ -222,7 +222,7 @@ component TableRow inherits Rectangle {
 // ─────────────────────────────────────────────────────────────────────────────
 // Tabelle: Header + Rows; ohne GridLayout, rein mit Flex (Vertical/Horizontal)
 // ─────────────────────────────────────────────────────────────────────────────
-export component TableComponent2 inherits Rectangle {
+export component TableComponent inherits Rectangle {
     in-out property <[string]> displays : ["Name", "Tag", "Updated"];
     in-out property <[[TableComponentEntry]]> entries;
 
@@ -286,8 +286,57 @@ export component TableComponent2 inherits Rectangle {
     }
 }
 
-export component LogicalLinkComponent {
+export component LogicalLinkComponent inherits HorizontalLayout {
+    in-out property <[string]> links : ["remote-archiv", "documents", "2025"];
+    spacing: ProductTheme.gap_1;
+    alignment: LayoutAlignment.start;
+    callback on_click(string);
+    Text {
+        text: "/";
+        color: ProductTheme.surface_button_hover;
+        font-size: ProductTheme.font_size_1;
+        font-weight: ProductTheme.font_weight_3;
+    }
 
+    for link[i] in links: HorizontalLayout {
+        spacing: 3px;
+        property <bool> underlined : false;
+        VerticalLayout {
+            Text {
+                color: (i + 1) != links.length ? ProductTheme.blue : ProductTheme.text_color;
+                text: link;
+                font-size: ProductTheme.font_size_1;
+                TouchArea {
+                    changed has-hover => {
+                        underlined = self.has-hover;
+                    }
+                    clicked => {
+                        on_click(link);
+                    }
+                }
+            }
+            if underlined: Rectangle {
+                height: 1px;
+                background: (i + 1) != links.length ? ProductTheme.blue : ProductTheme.text_color;
+            }
+        }
+        if (i + 1) != links.length: Path {
+            width: 10px;
+            height: 10px;
+            y: 6px;
+            stroke-width: 2px;
+            stroke: ProductTheme.surface_button_hover;
+            LineTo {
+                x: 0; y: 1;
+            }
+            LineTo {
+                x: 1; y: 0;
+            }
+            LineTo {
+                x: 0; y: -1;
+            }
+        }
+    }
 }
 
 export component TestWindow inherits Window {
@@ -409,9 +458,15 @@ export component TestWindow inherits Window {
                         text: "-";
                     }
                 }
-                TableComponent2 {
+                TableComponent {
                     displays: ["Name", "Tag", "Updated"];
                     entries <=> entries;
+                }
+                ContainerComponent {
+                    visible_background: false;
+                    LogicalLinkComponent {
+
+                    }
                 }
             }
         }
