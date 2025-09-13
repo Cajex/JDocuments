@@ -5,10 +5,12 @@ export component ButtonComponent inherits Rectangle {
     in-out property <string> text;
     in-out property <{image: image, v: bool}> image : { image: ProductImages.image_icon, v: false };
     in-out property <bool> visible_background : true;
+    in-out property <length> font_size : ProductTheme.font_size_1;
+    in-out property <length> corner_radius : ProductTheme.corner_radius_0;
     callback on_click();
 
     border-width: ProductTheme.border_width_0;
-    border-radius: ProductTheme.corner_radius_0;
+    border-radius: corner_radius;
     border-color: ProductTheme.border_color;
     in property <brush> surface : visible_background ? ProductTheme.surface_button : ProductTheme.background_canvas;
     in property <brush> hover_surface : visible_background ? ProductTheme.surface_button_hover : ProductTheme.background_canvas;
@@ -42,7 +44,7 @@ export component ButtonComponent inherits Rectangle {
             vertical-alignment: TextVerticalAlignment.center;
             text <=> text;
             color: ProductTheme.text_color;
-            font-size: ProductTheme.font_size_1;
+            font-size: font_size;
             font-weight: ProductTheme.font_weight_1;
         }
     }
@@ -122,77 +124,164 @@ export struct TableComponentEntry {
     display: { display: string, v: bool, },
 }
 
-export component TableComponent inherits Rectangle {
-    in-out property <[string]> displays : ["Display 0", "Display 1", "Display 2"];
-    in-out property <[[TableComponentEntry]]> entries;
-    in-out property <length> min_spacing : 200px;
-    border-radius: ProductTheme.corner_radius_1;
-    border-color: ProductTheme.border_color;
-    border-width: ProductTheme.border_width_0;
-    VerticalLayout {
-        padding: ProductTheme.gap_2;
+// ─────────────────────────────────────────────────────────────────────────────
+// Zelle: rendert Icon, Text(+optional Description) und/oder Badge-Display
+// ─────────────────────────────────────────────────────────────────────────────
+component TableCell inherits Rectangle {
+    in property <TableComponentEntry> entry;
+    in property <int> col_index : 0;
+    in property <int> col_count : 1;
+    in property <length> row_height : 32px;
+
+    min-height: row_height;
+    HorizontalLayout {
         spacing: ProductTheme.gap_1;
-        h:=HorizontalLayout {
-            alignment: LayoutAlignment.space-between;
-            for display[i] in displays: Text {
-                text: display;
+        padding-left: ProductTheme.gap_3;
+        padding-right: ProductTheme.gap_3;
+        alignment: LayoutAlignment.center;
+
+        if entry.image.v : Image {
+            width: ProductTheme.icon_size_3;
+            height: ProductTheme.icon_size_3;
+            vertical-alignment: ImageVerticalAlignment.center;
+            source: entry.image.image;
+            image-rendering: ImageRendering.smooth;
+            horizontal-alignment: ImageHorizontalAlignment.left;
+        }
+
+        if entry.text.v : VerticalLayout {
+            spacing: ProductTheme.gap_0;
+
+            Text {
+                text: entry.text.text;
+                color: ProductTheme.text_color;
+                font-size: ProductTheme.font_size_1;
+                wrap: TextWrap.no-wrap;
+                vertical-alignment: TextVerticalAlignment.center;
+                horizontal-alignment: TextHorizontalAlignment.left;
+            }
+
+            if entry.description.v : Text {
+                text: entry.description.desc;
                 color: ProductTheme.text_muted;
                 font-size: ProductTheme.font_size_0;
-                font-weight: ProductTheme.font_weight_1;
+                wrap: TextWrap.no-wrap;
+                overflow: TextOverflow.elide;
                 vertical-alignment: TextVerticalAlignment.center;
                 horizontal-alignment: TextHorizontalAlignment.left;
             }
         }
+
+        if entry.display.v : ButtonComponent {
+            text: entry.display.display;
+            visible_background: false;
+            corner_radius: ProductTheme.corner_radius_3;
+            font_size: ProductTheme.font_size_xs;
+        }
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Datenzeile: nutzt horizontal-stretch für feste Spaltenverhältnisse
+// ─────────────────────────────────────────────────────────────────────────────
+component TableRow inherits Rectangle {
+    in property <[TableComponentEntry]> rov;
+    in property <[int]> col_weights : [6, 3, 3];
+    in property <length> row_height : 30px;
+    in property <int> index : 0;
+
+    // dezent zebra
+    background: Math.mod(index, 2) == 1 ? ProductTheme.background_subtle : transparent;
+
+    VerticalLayout {
+        spacing: row_height;
+
+        HorizontalLayout {
+            padding-top: ProductTheme.gap_2;
+            spacing: 0px; // wichtig: keine Lücken zwischen Zellen
+                for row[i] in rov : Rectangle {
+                horizontal-stretch: i < col_weights.length ? col_weights[i] : 1;
+
+                TableCell {
+                    entry: rov[i];
+                    col_index: i;
+                    col_count: rov.length;
+                    row_height: root.row_height;
+                }
+            }
+        }
+
         Rectangle {
             height: ProductTheme.border_width_0;
             background: ProductTheme.border_color;
+            width: 100%;
         }
-        VerticalLayout {
-            for line[i] in entries: HorizontalLayout {
-                spacing: min_spacing;
-                for entry[x] in line: HorizontalLayout {
-                    spacing: ProductTheme.gap_1;
-                    if entry.image.v : Image {
-                        vertical-alignment: ImageVerticalAlignment.center;
-                        width: ProductTheme.icon_size_1;
-                        height: ProductTheme.icon_size_1;
-                        source: entry.image.image;
-                        image-rendering: ImageRendering.smooth;
-                    }
-                    if entry.text.v : VerticalLayout {
-                        spacing: ProductTheme.gap_0;
-                        Text {
-                            text: entry.text.text;
-                            color: ProductTheme.text_color;
-                            font-size: ProductTheme.font_size_1;
-                            vertical-alignment: TextVerticalAlignment.center;
-                            horizontal-alignment: TextHorizontalAlignment.left;
-                        }
-                        if entry.description.v : Text {
-                            text: entry.text.text;
-                            color: ProductTheme.text_muted;
-                            font-size: ProductTheme.font_size_0;
-                            vertical-alignment: TextVerticalAlignment.center;
-                            horizontal-alignment: TextHorizontalAlignment.left;
-                        }
-                    }
-                    if entry.display.v: Rectangle {
-                    border-radius: ProductTheme.corner_radius_2;
-                    border-color: ProductTheme.border_color;
-                    background: ProductTheme.background_subtle;
-                    border-width: ProductTheme.border_width_0;
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Tabelle: Header + Rows; ohne GridLayout, rein mit Flex (Vertical/Horizontal)
+// ─────────────────────────────────────────────────────────────────────────────
+export component TableComponent2 inherits Rectangle {
+    in-out property <[string]> displays : ["Name", "Tag", "Updated"];
+    in-out property <[[TableComponentEntry]]> entries;
+
+    // Spaltenverhältnis.
+    in property <[int]> col_weights : [1, 3, 1];
+    in property <length> row_height : 32px;
+
+    border-radius: ProductTheme.corner_radius_1;
+    border-color: ProductTheme.border_color;
+    border-width: ProductTheme.border_width_0;
+    background: ProductTheme.background_panel;
+    clip: true;
+
+    VerticalLayout {
+        spacing: 0;
+
+        // Header
+        Rectangle {
+            background: ProductTheme.background_subtle;
+
+            VerticalLayout {
+                spacing: 0;
+
+                HorizontalLayout {
+                    spacing: 0;
+
+                    // Headerzellen im gleichen Verhältnis
+                    for display[i] in displays : Rectangle {
+                        horizontal-stretch: i < col_weights.length ? col_weights[i] : 1;
 
                         Text {
-                            padding: ProductTheme.gap_0;
-                            text: entry.display.display;
-                            color: ProductTheme.text_color;
+                            padding-left: ProductTheme.gap_3;
+                            padding-right: ProductTheme.gap_3;
+                            min-height: 28px;
+
+                            text: display;
+                            color: ProductTheme.text_muted;
                             font-size: ProductTheme.font_size_0;
+                            wrap: TextWrap.no-wrap;
+                            overflow: TextOverflow.elide;
                             vertical-alignment: TextVerticalAlignment.center;
-                            horizontal-alignment: TextHorizontalAlignment.left;
+                            horizontal-alignment: i == (displays.length - 1)
+                                ? TextHorizontalAlignment.right
+                                : TextHorizontalAlignment.left;
                         }
                     }
                 }
+                Rectangle {
+                    height: ProductTheme.border_width_0;
+                    background: ProductTheme.border_color;
+                }
             }
+        }
+
+        for entrie[r] in entries : TableRow {
+            rov: entrie;
+            index: r;
+            col_weights: root.col_weights;
+            row_height: root.row_height;
         }
     }
 }
@@ -218,7 +307,7 @@ export component TestWindow inherits Window {
             // Col 2: Tag
             {
                 color: ProductTheme.text_color,
-                image: { image: ProductImages.image_tag, v: true },
+                image: { image: ProductImages.image_tag, v: false },
                 text:  { text: "", v: false },
                 description: { desc: "", v: false },
                 display: { display: "#policy", v: true },
@@ -246,7 +335,7 @@ export component TestWindow inherits Window {
             // Col 2: Tag
             {
                 color: ProductTheme.text_color,
-                image: { image: ProductImages.image_tag, v: true },
+                image: { image: ProductImages.image_tag, v: false },
                 text:  { text: "", v: false },
                 description: { desc: "", v: false },
                 display: { display: "#strategie", v: true },
@@ -274,7 +363,7 @@ export component TestWindow inherits Window {
             // Col 2: Tag
             {
                 color: ProductTheme.text_color,
-                image: { image: ProductImages.image_tag, v: true },
+                image: { image: ProductImages.image_tag, v: false },
                 text:  { text: "", v: false },
                 description: { desc: "", v: false },
                 display: { display: "#ui", v: true },
@@ -292,6 +381,7 @@ export component TestWindow inherits Window {
     default-font-family: font;
     background: ProductTheme.background_canvas;
     VerticalLayout {
+        width: 900px;
         alignment: LayoutAlignment.center;
         HorizontalLayout {
             alignment: LayoutAlignment.center;
@@ -319,7 +409,7 @@ export component TestWindow inherits Window {
                         text: "-";
                     }
                 }
-                TableComponent {
+                TableComponent2 {
                     displays: ["Name", "Tag", "Updated"];
                     entries <=> entries;
                 }
