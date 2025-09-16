@@ -57,10 +57,13 @@ export component DisplayComponent {
 export component ContainerComponent inherits Rectangle {
     in-out property <bool> visible_background : true;
     in-out property <{title: string, v: bool}> title : { title: "", v: false };
+    in property <color> b_color : ProductTheme.border_color;
+    in property <length> b_width : ProductTheme.border_width_0;
+    in property <bool> border : true;
     background: visible_background ? ProductTheme.background_panel : ProductTheme.background_canvas;
-    border-radius: ProductTheme.corner_radius_1;
-    border-color: ProductTheme.border_color;
-    border-width: ProductTheme.border_width_0;
+    border-radius: border ? ProductTheme.corner_radius_1 : 0;
+    border-color: border ? b_color : Colors.transparent;
+    border-width: border ? b_width : 0;
     VerticalLayout {
         spacing: ProductTheme.gap_2;
         if title.v: Text {
@@ -76,13 +79,38 @@ export component ContainerComponent inherits Rectangle {
     }
 }
 
-export component MenuComponent {
-    
+export component MenuComponent inherits Rectangle {
+    VerticalLayout {
+        VerticalLayout {
+            alignment: LayoutAlignment.center;
+            padding: ProductTheme.gap_2;
+            width: 100%;
+            HorizontalLayout {
+                @children
+            }
+        }
+        Path {
+            z: 5;
+            stroke: ProductTheme.border_color;
+            stroke-width: 1px;
+            height: 5px;
+            LineTo {
+                x: 0;
+                y: 0;
+            }
+            LineTo {
+                x: 1;
+                y: 0;
+            }
+        }
+    }
 }
 
 export component TextInputComponent inherits Rectangle {
     in-out property <string> preset;
-    in-out property <{image: image, v: bool}> image : { image: ProductImages.image_icon, v: false };
+    in property <{image: image, v: bool}> image : { image: ProductImages.image_icon, v: false };
+    in property <bool> t : true;
+    callback on_clicked();
     border-radius: ProductTheme.corner_radius_0;
     border-color: ProductTheme.border_color;
     border-width: ProductTheme.border_width_0;
@@ -96,7 +124,7 @@ export component TextInputComponent inherits Rectangle {
             source: image.image;
             image-rendering: ImageRendering.smooth;
         }
-        input:=TextInput {
+        if t: input:=TextInput {
             text: preset;
             color: ProductTheme.text_muted;
             font-size: ProductTheme.font_size_1;
@@ -109,11 +137,68 @@ export component TextInputComponent inherits Rectangle {
                 root.border-width = self.has-focus ? ProductTheme.border_width_1 : ProductTheme.border_width_0;
             }
         }
+        if !t : touch:= Rectangle {
+            Text {
+                text: preset;
+                color: ProductTheme.text_muted;
+                font-size: ProductTheme.font_size_1;
+                vertical-alignment: TextVerticalAlignment.center;
+                horizontal-alignment: TextHorizontalAlignment.left;
+            }
+            TouchArea {
+                clicked => {
+                    on_clicked()
+                }
+            }
+        }
     }
 }
 
-export component SearchComponent {
+export component SearchComponent inherits TextInputComponent {
+    in-out property <[string]> search_propmpts : ["Dokumente", "Verknüpfungen"];
+    in-out property <[[string]]> prompts : [["Krim Aufsatz", "Berlin Steuern"], ["Ordner-1", "Ordner-2"]];
+    preset: "Suche nach Schlagwörtern, Daten, und Daten";
+    image: { image: ProductImages.image_search, v: true };
+    t: false;
+    window:= PopupWindow {
+        close-policy: PopupClosePolicy.close-on-click-outside;
+        x: root.x - ProductTheme.gap_2 * 2;
+        ContainerComponent {
+        b_color: ProductTheme.surface_button_hover;
+        b_width: ProductTheme.border_width_1;
+            TextInputComponent {
+                width: root.width;
+                image: root.image;
+                preset: root.preset;
+            }
+            for search_prompt[i] in search_propmpts: ContainerComponent {
+                border: false;
+                title: { title: search-prompt, v: true };
+                border-width: 0;
+                for prompt[x] in prompts[i] : HorizontalLayout {
+                    spacing: ProductTheme.gap_1;
+                    Image {
+                        vertical-alignment: ImageVerticalAlignment.center;
+                        width: ProductTheme.icon_size_2;
+                        height: ProductTheme.icon_size_2;
+                        source: ProductImages.image_pdf;
+                        image-rendering: ImageRendering.smooth;
+                    }
+                    Text {
+                        text: prompt;
+                        color: ProductTheme.text_muted;
+                        font-size: ProductTheme.font_size_1;
+                        vertical-alignment: TextVerticalAlignment.center;
+                        horizontal-alignment: TextHorizontalAlignment.left;
+                    }
+                }
+            }
+        }
+    }
+    on_clicked => {
+        window.show();
 
+    }
 }
 
 export struct TableComponentEntry {
@@ -522,6 +607,9 @@ export component TestWindow inherits Window {
                     }
                 }
                 LatestChangesComponent {
+
+                }
+                SearchComponent {
 
                 }
             }
