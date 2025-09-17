@@ -110,7 +110,11 @@ export component TextInputComponent inherits Rectangle {
     in-out property <string> preset;
     in property <{image: image, v: bool}> image : { image: ProductImages.image_icon, v: false };
     in property <bool> t : true;
+    in property <bool> tp_v : false;
+    in property <[{text_part: string, color: color}]> text_parts : [ {text_part: preset, color: Colors.transparent} ];
     callback on_clicked();
+    callback on_type(string);
+    callback confirm();
     border-radius: ProductTheme.corner_radius_0;
     border-color: ProductTheme.border_color;
     border-width: ProductTheme.border_width_0;
@@ -124,8 +128,8 @@ export component TextInputComponent inherits Rectangle {
             source: image.image;
             image-rendering: ImageRendering.smooth;
         }
-        if t: input:=TextInput {
-            text: preset;
+        if t && !tp_v: input:=TextInput {
+            text <=> preset;
             color: ProductTheme.text_muted;
             font-size: ProductTheme.font_size_1;
             vertical-alignment: TextVerticalAlignment.center;
@@ -135,6 +139,29 @@ export component TextInputComponent inherits Rectangle {
                 self.color = self.has-focus ? ProductTheme.text_color : ProductTheme.text_muted;
                 root.border-color = self.has-focus ? ProductTheme.blue : ProductTheme.border_color;
                 root.border-width = self.has-focus ? ProductTheme.border_width_1 : ProductTheme.border_width_0;
+            }
+            edited => { on_type(self.text) }
+            accepted => {
+                confirm()
+            }
+        }
+        if t && tp_v: hinput:= HorizontalLayout {
+            for text_part[i] in text_parts: Rectangle {
+                background: text_part.color;
+                TextInput {
+                    padding: ProductTheme.gap_1;
+                    text: text_part.text_part;
+                    color: ProductTheme.text_muted;
+                    font-size: ProductTheme.font_size_1;
+                    vertical-alignment: TextVerticalAlignment.center;
+                    horizontal-alignment: TextHorizontalAlignment.left;
+                    changed has-focus => {
+                        self.text = self.has-focus ? "" : preset;
+                        self.color = self.has-focus ? ProductTheme.text_color : ProductTheme.text_muted;
+                        root.border-color = self.has-focus ? ProductTheme.blue : ProductTheme.border_color;
+                        root.border-width = self.has-focus ? ProductTheme.border_width_1 : ProductTheme.border_width_0;
+                    }
+                }
             }
         }
         if !t : touch:= Rectangle {
@@ -154,27 +181,42 @@ export component TextInputComponent inherits Rectangle {
     }
 }
 
+export global SearchComponentGlobal {
+    callback push_part([{text_part: string, color: color}], {text_part: string, color: color});
+}
+
 export component SearchComponent inherits TextInputComponent {
     in-out property <[string]> search_propmpts : ["Dokumente", "Verknüpfungen"];
     in-out property <[[string]]> prompts : [["Krim Aufsatz", "Berlin Steuern"], ["Ordner-1", "Ordner-2"]];
     preset: "Suche nach Schlagwörtern, Daten, und Daten";
     image: { image: ProductImages.image_search, v: true };
     t: false;
+    in-out property <[{text_part: string, color: color}]> parts : [ {text_part: self.preset, color: Colors.transparent} ];
+    callback on_typed(string);
+    callback on_confirm();
+
     window:= PopupWindow {
         close-policy: PopupClosePolicy.close-on-click-outside;
         x: root.x - ProductTheme.gap_2 * 2;
         ContainerComponent {
         b_color: ProductTheme.surface_button_hover;
         b_width: ProductTheme.border_width_1;
-            TextInputComponent {
+            ti:=TextInputComponent {
+                text_parts <=> root.parts;
+                tp_v: true;
                 width: root.width;
                 image: root.image;
                 preset: root.preset;
+                on_type(text) => { on_typed(text) }
             }
             for search_prompt[i] in search_propmpts: ContainerComponent {
                 border: false;
                 title: { title: search-prompt, v: true };
                 border-width: 0;
+                Rectangle {
+                    height: ProductTheme.border_width_0;
+                    background: ProductTheme.surface_button_hover;
+                }
                 for prompt[x] in prompts[i] : HorizontalLayout {
                     spacing: ProductTheme.gap_1;
                     Image {
@@ -184,12 +226,20 @@ export component SearchComponent inherits TextInputComponent {
                         source: ProductImages.image_pdf;
                         image-rendering: ImageRendering.smooth;
                     }
-                    Text {
+                    p:=Text {
                         text: prompt;
                         color: ProductTheme.text_muted;
                         font-size: ProductTheme.font_size_1;
                         vertical-alignment: TextVerticalAlignment.center;
                         horizontal-alignment: TextHorizontalAlignment.left;
+                        ta:= TouchArea {
+                            changed has-hover => {
+                                p.color = ta.has-hover ? ProductTheme.blue : ProductTheme.text_muted;
+                            }
+                            clicked => {
+                                SearchComponentGlobal.push_part(root.parts, { text_part: p.text, color: ProductTheme.blue });
+                            }
+                        }
                     }
                 }
             }
